@@ -122,11 +122,11 @@ def process_send(args):
                 continue
             print('uploading solution %s' % name)
             content = open(config.get_solution_path(name), 'r').read()
-            sucsess = global_vars.problem.edit_solution(name, content)
+            success = global_vars.problem.edit_solution(name, content)
         else:
             content = open(config.get_solution_path(name), 'r').read()
-            sucsess = global_vars.problem.upload_solution(name, content)
-        if sucsess:
+            success = global_vars.problem.upload_solution(name, content)
+        if success:
             utils.safe_rewrite_file(config.get_download_solution_path(name), content)
 
 
