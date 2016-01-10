@@ -104,7 +104,22 @@ class ProblemSession:
         return solutions
 
     def upload_solution(self, name, content):
-        raise NotImplementedError
+        fields = {
+            'solutions_file_type': ('', ''),
+            'submitted': ('', 'true'),
+            'solutions_file_added': (name, content),
+            'ccid': ('', self.ccid),
+            'session': ('', self.sessionId)
+        }
+        r = self.send_request('POST', self.make_link('solutions'), files=fields)
+        open("results.html", 'w').write(r.text)
+        parser = FindUploadErrorParser()
+        parser.feed(r.text)
+        if parser.error:
+            print('Received error:')
+            print(parser.error)
+            return False
+        return True
 
     def edit_solution(self, name, content):
         fields = {
@@ -116,7 +131,7 @@ class ProblemSession:
             'session': self.sessionId
         }
         r = self.send_request('POST', self.make_link('modify'), data=fields)
-        parser = FindErrorParser()
+        parser = FindEditErrorParser()
         parser.feed(r.text)
         if parser.error:
             print('Received error:')

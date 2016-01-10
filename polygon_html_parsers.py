@@ -1,3 +1,4 @@
+from html.entities import name2codepoint
 from html.parser import HTMLParser
 
 from solution import Solution
@@ -107,7 +108,7 @@ class SolutionsPageParser(HTMLParser):
                 self.solutions[-1].date = data.strip()
 
 
-class FindErrorParser(HTMLParser):
+class FindEditErrorParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.error = None
@@ -124,3 +125,30 @@ class FindErrorParser(HTMLParser):
     def handle_data(self, data):
         if self.inError and data.strip():
             self.error = data.strip()
+
+
+class FindUploadErrorParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.error = None
+        self.inError = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'div' and len(attrs) == 1 and attrs[0][0] == 'style' and attrs[0][1].startswith('color: red'):
+            self.inError = True
+            self.error = ''
+            return
+        if tag == 'br' and self.inError:
+            self.error += '\n'
+
+    def handle_endtag(self, tag):
+        if tag == 'div':
+            self.inError = False
+
+    def handle_data(self, data):
+        if self.inError and data.strip():
+            self.error += data
+
+    def handle_entityref(self, name):
+        if self.inError:
+            self.error += chr(name2codepoint[name])
