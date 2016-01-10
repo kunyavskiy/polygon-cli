@@ -86,7 +86,7 @@ def process_update(args):
         solution_text = download_solution(solution.download_link)
         if solution.name not in local_solutions:
             print('New solution found: %s' % solution.name)
-            utils.safe_rewrite_file(config.get_solution_path(solution.name), solution)
+            utils.safe_rewrite_file(config.get_solution_path(solution.name), solution_text)
         else:
             print('Updating solution %s' % solution.name)
             old_path = config.get_download_solution_path(solution.name)
