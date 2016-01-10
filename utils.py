@@ -15,7 +15,7 @@ def read_file(filename):
 
 
 def merge_files(old, our, theirs):
-    p = Popen(["/usr/bin/diff3", "--strip-trailing-cr", "--merge", our, old, theirs], stdout=PIPE)
+    p = Popen(config.get_merge_tool(old, our, theirs), stdout=PIPE, shell=True)
     diff3out, _ = p.communicate()
     if p.returncode == 1:
         print('Conflict in file %s' % our)

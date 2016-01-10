@@ -85,14 +85,16 @@ def process_update(argv):
             continue
         solution_text = download_solution(solution.download_link)
         if solution.name not in localSolutions:
-            print('New solution found: %s', solution['name'])
+            print('New solution found: %s' % solution.name)
             utils.safe_rewrite_file(config.get_solution_path(solution.name), solution)
         else:
+            print('Updating solution %s' % solution.name)
             old_path = config.get_download_solution_path(solution.name)
             if not os.path.exists(old_path):
-               utils.safe_rewrite_file(old_path, '')
+                utils.safe_rewrite_file(old_path, '')
             utils.safe_update_file(old_path, config.get_solution_path(solution.name), solution_text)
     save_session()
+
 
 def process_send(argv):
     load_session()
