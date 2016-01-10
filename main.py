@@ -102,21 +102,20 @@ def process_send(argv):
         print('No session known. Use relogin or init first.')
         exit(0)
     solutions = global_vars.problem.get_solutions_list()
-    solutionsDict = {i.name : i for i in solutions}
-
+    solutions_dict = {i.name: i for i in solutions}
     for name in argv:
         if name.startswith(config.solutions_path + '/'):
             name = name[len(config.solutions_path + '/'):]
         if not os.path.exists(config.get_solution_path(name)):
             print('solution %s not found' % name)
             continue
-        if name in solutionsDict:
-            solution = solutionsDict[name]
+        if name in solutions_dict:
+            solution = solutions_dict[name]
             old_path = config.get_download_solution_path(name)
             if not os.path.exists(old_path):
                 print('solution %s is outdated: update first' % name)
                 continue
-            solutionText = download_solution(solution.download_link).splitlines() # TODO: check some fingerprint
+            solutionText = download_solution(solution.download_link).splitlines()  # TODO: check some fingerprint
             oldSolutionText = open(old_path, 'r').read().splitlines()
             if solutionText != oldSolutionText:
                 print('solution %s is outdated: update first' % name)
@@ -129,7 +128,6 @@ def process_send(argv):
             sucsess = global_vars.problem.updload_solution(name, content)
         if sucsess:
             utils.safe_rewrite_file(config.get_download_solution_path(name), content)
-
 
 
 def print_help():

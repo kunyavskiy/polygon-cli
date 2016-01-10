@@ -110,12 +110,12 @@ class problemSession:
 
     def edit_solution(self, name, content):
         fields = {
-            'type' : 'solutions',
-            'file' : name,
-            'submitted' : 'true',
-            'content' : content,
-            'ccid' : self.ccid,
-            'session' : self.sessionId
+            'type': 'solutions',
+            'file': name,
+            'submitted': 'true',
+            'content': content,
+            'ccid': self.ccid,
+            'session': self.sessionId
         }
         r = self.send_request('POST', self.make_link('modify'), data=fields)
         parser = FindErrorParser()

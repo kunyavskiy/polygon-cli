@@ -106,6 +106,7 @@ class SolutionsPageParser(HTMLParser):
             elif self.tdId == 4:
                 self.solutions[-1].date = data.strip()
 
+
 class FindErrorParser(HTMLParser):
     def __init__(self):
         super().__init__()
