@@ -3,15 +3,13 @@ import requests
 import config
 import utils
 from exceptions import PolygonNotLoginnedError, ProblemNotFoundError
-from polygon_html_parsers import ExtractCCIDParser, ProblemsPageParser, ExtractSessionParser, SolutionsPageParser, \
-    FindErrorParser
-from utils import safe_update_file
+from polygon_html_parsers import *
 
 
-class problemSession:
-    def __init__(self, address, problemId):
+class ProblemSession:
+    def __init__(self, address, problem_id):
         self.polygon_address = address
-        self.problem_id = problemId
+        self.problem_id = problem_id
         self.session = requests.session()
         self.sessionId = None
         self.ccid = None
@@ -35,16 +33,16 @@ class problemSession:
     def make_link(self, link, ccid=False, ssid=False):
         if ccid:
             if link.find('?') != -1:
-                link = link + '&'
+                link += '&'
             else:
-                link = link + '?'
-            link = link + 'ccid=%s' % self.ccid
+                link += '?'
+            link += 'ccid=%s' % self.ccid
         if ssid:
             if link.find('?') != -1:
-                link = link + '&'
+                link += '&'
             else:
-                link = link + '?'
-            link = link + 'session=%s' % self.sessionId
+                link += '?'
+            link += 'session=%s' % self.sessionId
         if link.startswith('/'):
             result = self.polygon_address + link
         else:
@@ -72,14 +70,14 @@ class problemSession:
         result = self.send_request('POST', url, data=fields)
         parser = ExtractCCIDParser()
         parser.feed(result.text)
-        assert (parser.ccid)
+        assert parser.ccid
         self.ccid = parser.ccid
 
     def get_problem_links(self):
         url = self.make_link('problems', ccid=True)
-        problemsPage = self.send_request('GET', url).text
+        problems_page = self.send_request('GET', url).text
         parser = ProblemsPageParser(self.problem_id)
-        parser.feed(problemsPage)
+        parser.feed(problems_page)
         return {'continue': parser.continueLink,
                 'discard': parser.discardLink,
                 'start': parser.startLink}
@@ -90,22 +88,22 @@ class problemSession:
         if links['start'] is None and links['continue'] is None:
             raise ProblemNotFoundError()
         url = self.make_link(links['continue'] or links['start'])
-        problemPage = self.send_request('GET', url).text
+        problem_page = self.send_request('GET', url).text
         parser = ExtractSessionParser()
-        parser.feed(problemPage)
+        parser.feed(problem_page)
         self.sessionId = parser.session
 
     def get_solutions_list(self):
         url = self.make_link('solutions', ccid=True, ssid=True)
-        solutionsPage = self.send_request('GET', url)
+        solutions_page = self.send_request('GET', url)
         parser = SolutionsPageParser()
-        parser.feed(solutionsPage.text)
+        parser.feed(solutions_page.text)
         solutions = parser.solutions
         for i in range(len(solutions)):
             solutions[i].normalize(self)
         return solutions
 
-    def updload_solution(self, name, content):
+    def upload_solution(self, name, content):
         raise NotImplementedError
 
     def edit_solution(self, name, content):
@@ -121,7 +119,7 @@ class problemSession:
         parser = FindErrorParser()
         parser.feed(r.text)
         if parser.error:
-            print('Recieved error:')
+            print('Received error:')
             print(parser.error)
             return False
         return True

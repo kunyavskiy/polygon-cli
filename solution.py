@@ -1,4 +1,4 @@
-class solution:
+class Solution:
     def __init__(self):
         self.name = None
         self.date = None
@@ -11,10 +11,10 @@ class solution:
     def __repr__(self):
         return str(self.__dict__)
 
-    def byDict(self, dict):
-        for key in dict.keys():
+    def by_dict(self, data):
+        for key in data.keys():
             if key != '__type':
-                setattr(self, key, dict[key])
+                setattr(self, key, data[key])
 
     def normalize(self, session):
         assert self.remove_link

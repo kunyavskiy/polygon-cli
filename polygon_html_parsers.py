@@ -1,6 +1,6 @@
 from html.parser import HTMLParser
 
-from solution import solution
+from solution import Solution
 
 
 class ExtractCCIDParser(HTMLParser):
@@ -15,13 +15,13 @@ class ExtractCCIDParser(HTMLParser):
 
 
 class ProblemsPageParser(HTMLParser):
-    def __init__(self, problemId):
+    def __init__(self, problem_id):
         super().__init__()
         self.continueLink = None
         self.discardLink = None
         self.startLink = None
         self.inCorrectRow = False
-        self.problemId = problemId
+        self.problemId = problem_id
 
     def handle_starttag(self, tag, attrs):
         if tag == 'tr':
@@ -64,17 +64,17 @@ class SolutionsPageParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.solutions = []
-        self.inTbody = False
+        self.in_tbody = False
         self.tdId = -1
 
     def handle_starttag(self, tag, attrs):
         if tag == 'tbody':
-            self.inTbody = True
+            self.in_tbody = True
             return
-        if not self.inTbody:
+        if not self.in_tbody:
             return
         if tag == 'tr':
-            self.solutions.append(solution())
+            self.solutions.append(Solution())
             self.tdId = -1
             return
         if tag == 'td':
@@ -92,10 +92,10 @@ class SolutionsPageParser(HTMLParser):
 
     def handle_endtag(self, tag):
         if tag == 'tbody':
-            self.inTbody = False
+            self.in_tbody = False
 
     def handle_data(self, data):
-        if self.inTbody and data.strip():
+        if self.in_tbody and data.strip():
             if self.tdId == 0:
                 if data.strip() == 'No files':
                     self.solutions = self.solutions[:-1]
