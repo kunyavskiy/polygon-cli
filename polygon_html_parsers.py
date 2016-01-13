@@ -61,10 +61,10 @@ class ExtractSessionParser(HTMLParser):
             self.session = data
 
 
-class SolutionsPageParser(HTMLParser):
+class FileListParser(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.solutions = []
+        self.files = []
         self.in_tbody = False
         self.tdId = -1
 
@@ -75,7 +75,7 @@ class SolutionsPageParser(HTMLParser):
         if not self.in_tbody:
             return
         if tag == 'tr':
-            self.solutions.append(PolygonFile())
+            self.files.append(PolygonFile())
             self.tdId = -1
             return
         if tag == 'td':
@@ -84,26 +84,27 @@ class SolutionsPageParser(HTMLParser):
             if attrs[0][0] == 'class':
                 if attrs[0][1] == 'remove-link':
                     assert attrs[1][0] == 'file'
-                    self.solutions[-1].name = attrs[1][1]
-                    self.solutions[-1].remove_link = attrs[2][1]
+                    self.files[-1].name = attrs[1][1]
+                    self.files[-1].remove_link = attrs[2][1]
                 elif attrs[0][1] == 'edit-link':
-                    self.solutions[-1].edit_link = attrs[1][1]
+                    self.files[-1].edit_link = attrs[1][1]
             else:
-                self.solutions[-1].download_link = attrs[0][1]
+                self.files[-1].download_link = attrs[0][1]
 
     def handle_endtag(self, tag):
         if tag == 'tbody':
             self.in_tbody = False
 
+class SolutionsPageParser(FileListParser):
     def handle_data(self, data):
         if self.in_tbody and data.strip():
             if self.tdId == 0:
                 if data.strip() == 'No files':
-                    self.solutions = self.solutions[:-1]
+                    self.files = self.files[:-1]
             elif self.tdId == 3:
-                self.solutions[-1].size = data.strip()
+                self.files[-1].size = data.strip()
             elif self.tdId == 4:
-                self.solutions[-1].date = data.strip()
+                self.files[-1].date = data.strip()
 
 
 class FindEditErrorParser(HTMLParser):

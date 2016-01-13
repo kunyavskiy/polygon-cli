@@ -98,7 +98,7 @@ class ProblemSession:
         solutions_page = self.send_request('GET', url)
         parser = SolutionsPageParser()
         parser.feed(solutions_page.text)
-        solutions = parser.solutions
+        solutions = parser.files
         for i in range(len(solutions)):
             solutions[i].normalize(self)
         return solutions
