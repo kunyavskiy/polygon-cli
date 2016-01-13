@@ -100,6 +100,7 @@ class FileListParser(HTMLParser):
         if tag == 'tbody':
             self.in_tbody = False
 
+
 class SolutionsPageParser(FileListParser):
     def get_file_type(self):
         return 'solution'
@@ -115,6 +116,7 @@ class SolutionsPageParser(FileListParser):
                 self.files[-1].size = data.strip()
             elif self.td_id == 4:
                 self.files[-1].date = data.strip()
+
 
 class FilesPageParser(FileListParser):
     def get_file_type(self):

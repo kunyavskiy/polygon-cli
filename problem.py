@@ -113,7 +113,6 @@ class ProblemSession:
             files[i].normalize(self)
         return files
 
-
     def upload_solution(self, name, content):
         fields = {
             'solutions_file_type': ('', ''),

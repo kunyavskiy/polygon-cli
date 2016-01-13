@@ -129,6 +129,7 @@ def process_send(args):
         if success:
             utils.safe_rewrite_file(config.get_download_solution_path(name), content)
 
+
 def process_list(args):
     load_session()
     if global_vars.problem.sessionId is None:
