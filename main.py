@@ -135,7 +135,7 @@ def process_list(args):
     if global_vars.problem.sessionId is None:
         print('No session known. Use relogin or init first.')
         exit(0)
-    files = global_vars.problem.get_solutions_list() + global_vars.problem.get_files_list()
+    files = global_vars.problem.get_all_files_list()
     for file in files:
         print('%s\t%s' % (file.type, file.name))
 
