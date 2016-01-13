@@ -144,6 +144,8 @@ Supported commands:
 
 def main():
     try:
+        if len(argv) < 2:
+            print_help()
         if argv[1] == 'init':
             process_init(argv[2:])
         elif argv[1] == 'relogin':
