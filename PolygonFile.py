@@ -17,6 +17,10 @@ class PolygonFile:
                 setattr(self, key, data[key])
 
     def normalize(self, session):
+        """
+
+        :type session: problem.ProblemSession
+        """
         assert self.remove_link
         assert self.download_link
         assert self.edit_link

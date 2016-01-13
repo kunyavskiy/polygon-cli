@@ -2,12 +2,18 @@ import requests
 
 import config
 import utils
+import PolygonFile
 from exceptions import PolygonNotLoginnedError, ProblemNotFoundError
 from polygon_html_parsers import *
 
 
 class ProblemSession:
     def __init__(self, address, problem_id):
+        """
+
+        :type address: str
+        :type problem_id: int
+        """
         self.polygon_address = address
         self.problem_id = problem_id
         self.session = requests.session()
@@ -15,6 +21,10 @@ class ProblemSession:
         self.ccid = None
 
     def use_ready_session(self, data):
+        """
+
+        :type data: dict
+        """
         cookies = data["cookies"]
         for i in cookies.keys():
             self.session.cookies.set(i, cookies[i])
@@ -23,6 +33,11 @@ class ProblemSession:
         self.sessionId = data["sessionId"]
 
     def dump_session(self):
+        """
+
+        :rtype: dict
+        :return: session ready to json-serialization
+        """
         data = dict()
         data["problemId"] = self.problem_id
         data["sessionId"] = self.sessionId
@@ -31,6 +46,13 @@ class ProblemSession:
         return data
 
     def make_link(self, link, ccid=False, ssid=False):
+        """
+
+        :type link: str
+        :type ccid: bool
+        :type ssid: bool
+        :rtype: str
+        """
         if ccid:
             if link.find('?') != -1:
                 link += '&'
@@ -50,6 +72,13 @@ class ProblemSession:
         return result
 
     def send_request(self, method, url, **kw):
+        """
+
+        :type method: str
+        :type url: str
+        :rtype: requests.Response
+        :raises: PolygonNotLoginnedError
+        """
         print('Sending request to ' + utils.prepare_url_print(url), end=' ')
         result = self.session.request(method, url, **kw)
         print(result.status_code)
@@ -58,6 +87,11 @@ class ProblemSession:
         return result
 
     def login(self, login, password):
+        """
+
+        :type login: str
+        :type password: str
+        """
         fields = {
             "submitted": "true",
             "login": login,
@@ -74,6 +108,10 @@ class ProblemSession:
         self.ccid = parser.ccid
 
     def get_problem_links(self):
+        """
+
+        :rtype: dict
+        """
         url = self.make_link('problems', ccid=True)
         problems_page = self.send_request('GET', url).text
         parser = ProblemsPageParser(self.problem_id)
@@ -83,6 +121,11 @@ class ProblemSession:
                 'start': parser.startLink}
 
     def create_new_session(self, login, password):
+        """
+
+        :type login: str
+        :type password: str
+        """
         self.login(login, password)
         links = self.get_problem_links()
         if links['start'] is None and links['continue'] is None:
@@ -94,6 +137,10 @@ class ProblemSession:
         self.sessionId = parser.session
 
     def get_solutions_list(self):
+        """
+
+        :rtype: list of PolygonFile.PolygonFile
+        """
         url = self.make_link('solutions', ccid=True, ssid=True)
         solutions_page = self.send_request('GET', url)
         parser = SolutionsPageParser()
@@ -104,6 +151,10 @@ class ProblemSession:
         return files
 
     def get_files_list(self):
+        """
+
+        :rtype: list of PolygonFile.PolygonFile
+        """
         url = self.make_link('files', ccid=True, ssid=True)
         solutions_page = self.send_request('GET', url)
         parser = FilesPageParser()
@@ -114,9 +165,20 @@ class ProblemSession:
         return files
 
     def get_all_files_list(self):
+        """
+
+        :rtype: list of PolygonFile.PolygonFile
+        """
         return self.get_files_list() + self.get_solutions_list()
 
     def upload_solution(self, name, content):
+        """
+        Uploads new solution to polygon
+
+        :type name: str
+        :type content: str
+        :rtype: bool
+        """
         fields = {
             'solutions_file_type': ('', ''),
             'submitted': ('', 'true'),
@@ -135,6 +197,13 @@ class ProblemSession:
         return True
 
     def edit_solution(self, name, content):
+        """
+        Edits existing solution in polygon
+
+        :type name: str
+        :type content: str
+        :rtype: bool
+        """
         fields = {
             'type': 'solutions',
             'file': name,
