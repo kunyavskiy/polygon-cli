@@ -1,4 +1,4 @@
-from PolygonFile import PolygonFile
+from polygon_file import PolygonFile
 
 
 def my_json_encoder(obj):

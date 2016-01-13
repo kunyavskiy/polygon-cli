@@ -2,7 +2,7 @@ import requests
 
 import config
 import utils
-import PolygonFile
+import polygon_file
 from exceptions import PolygonNotLoginnedError, ProblemNotFoundError
 from polygon_html_parsers import *
 
@@ -139,7 +139,7 @@ class ProblemSession:
     def get_solutions_list(self):
         """
 
-        :rtype: list of PolygonFile.PolygonFile
+        :rtype: list of polygon_file.PolygonFile
         """
         url = self.make_link('solutions', ccid=True, ssid=True)
         solutions_page = self.send_request('GET', url)
@@ -153,7 +153,7 @@ class ProblemSession:
     def get_files_list(self):
         """
 
-        :rtype: list of PolygonFile.PolygonFile
+        :rtype: list of polygon_file.PolygonFile
         """
         url = self.make_link('files', ccid=True, ssid=True)
         solutions_page = self.send_request('GET', url)
@@ -167,7 +167,7 @@ class ProblemSession:
     def get_all_files_list(self):
         """
 
-        :rtype: list of PolygonFile.PolygonFile
+        :rtype: list of polygon_file.PolygonFile
         """
         return self.get_files_list() + self.get_solutions_list()
 
