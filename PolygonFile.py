@@ -1,9 +1,8 @@
-class Solution:
+class PolygonFile:
     def __init__(self):
         self.name = None
         self.date = None
         self.size = None
-        self.author = None
         self.remove_link = None
         self.download_link = None
         self.edit_link = None

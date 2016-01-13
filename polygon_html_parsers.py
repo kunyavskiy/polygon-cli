@@ -1,7 +1,7 @@
 from html.entities import name2codepoint
 from html.parser import HTMLParser
 
-from solution import Solution
+from PolygonFile import PolygonFile
 
 
 class ExtractCCIDParser(HTMLParser):
@@ -75,7 +75,7 @@ class SolutionsPageParser(HTMLParser):
         if not self.in_tbody:
             return
         if tag == 'tr':
-            self.solutions.append(Solution())
+            self.solutions.append(PolygonFile())
             self.tdId = -1
             return
         if tag == 'td':
@@ -100,8 +100,6 @@ class SolutionsPageParser(HTMLParser):
             if self.tdId == 0:
                 if data.strip() == 'No files':
                     self.solutions = self.solutions[:-1]
-                else:
-                    self.solutions[-1].author = data.strip()
             elif self.tdId == 3:
                 self.solutions[-1].size = data.strip()
             elif self.tdId == 4:
