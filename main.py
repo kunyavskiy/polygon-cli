@@ -129,6 +129,15 @@ def process_send(args):
         if success:
             utils.safe_rewrite_file(config.get_download_solution_path(name), content)
 
+def process_list(args):
+    load_session()
+    if global_vars.problem.sessionId is None:
+        print('No session known. Use relogin or init first.')
+        exit(0)
+    files = global_vars.problem.get_solutions_list() + global_vars.problem.get_files_list()
+    for file in files:
+        print('%s\t%s' % (file.type, file.name))
+
 
 def print_help():
     print("""
@@ -138,6 +147,7 @@ Supported commands:
     relogin\tCreate new polygon http session for same problem
     update\tDownload all solutions from working copy, and merges with local copy
     send <files>\tUpload files as solutions
+    list\tlist of files in polygon
 """)
     exit(1)
 
@@ -146,7 +156,7 @@ def main():
     try:
         if len(argv) < 2:
             print_help()
-        if argv[1] == 'init':
+        elif argv[1] == 'init':
             process_init(argv[2:])
         elif argv[1] == 'relogin':
             process_relogin(argv[2:])
@@ -154,6 +164,8 @@ def main():
             process_update(argv[2:])
         elif argv[1] == 'send':
             process_send(argv[2:])
+        elif argv[1] == 'list':
+            process_list(argv[2:])
         else:
             print_help()
     except PolygonNotLoginnedError:

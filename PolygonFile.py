@@ -1,6 +1,7 @@
 class PolygonFile:
     def __init__(self):
         self.name = None
+        self.type = None
         self.date = None
         self.size = None
         self.remove_link = None

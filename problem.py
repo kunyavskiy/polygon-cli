@@ -98,10 +98,21 @@ class ProblemSession:
         solutions_page = self.send_request('GET', url)
         parser = SolutionsPageParser()
         parser.feed(solutions_page.text)
-        solutions = parser.files
-        for i in range(len(solutions)):
-            solutions[i].normalize(self)
-        return solutions
+        files = parser.files
+        for i in range(len(files)):
+            files[i].normalize(self)
+        return files
+
+    def get_files_list(self):
+        url = self.make_link('files', ccid=True, ssid=True)
+        solutions_page = self.send_request('GET', url)
+        parser = FilesPageParser()
+        parser.feed(solutions_page.text)
+        files = parser.files
+        for i in range(len(files)):
+            files[i].normalize(self)
+        return files
+
 
     def upload_solution(self, name, content):
         fields = {
