@@ -19,6 +19,7 @@ class ProblemSession:
         self.session = requests.session()
         self.sessionId = None
         self.ccid = None
+        self.local_files = []
 
     def use_ready_session(self, data):
         """
@@ -31,6 +32,7 @@ class ProblemSession:
         self.ccid = data["ccid"]
         assert self.problem_id == data["problemId"]
         self.sessionId = data["sessionId"]
+        self.local_files = data["localFiles"]
 
     def dump_session(self):
         """
@@ -43,6 +45,7 @@ class ProblemSession:
         data["sessionId"] = self.sessionId
         data["cookies"] = self.session.cookies.get_dict()
         data["ccid"] = self.ccid
+        data["localFiles"] = self.local_files
         return data
 
     def make_link(self, link, ccid=False, ssid=False):

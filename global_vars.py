@@ -1,1 +1,1 @@
-problem = None
+problem = None # type: problem.ProblemSession
