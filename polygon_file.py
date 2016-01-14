@@ -37,7 +37,7 @@ class PolygonFile:
         :rtype: str
         """
         file_text = global_vars.problem.send_request('GET', self.download_link).text
-        return file_text.replace(' \r\n', '\r\n')
+        return file_text
 
     def get_default_local_dir(self):
         if self.type == 'solution':
