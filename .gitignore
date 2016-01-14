@@ -1,5 +1,6 @@
 .idea
 .polygon-cli
 solutions
+src
 __pycache__
 *.html
