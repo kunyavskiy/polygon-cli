@@ -35,7 +35,6 @@ class LocalFile:
         """
         return os.path.join(config.internal_directory_path, self.filename)
 
-
     def upload(self):
         assert self.polygon_filename is None
         content = open(self.get_path(), 'r').read()

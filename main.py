@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import json
-import os
 import sys
-import traceback
 from getpass import getpass
 from sys import argv
 
@@ -12,10 +10,9 @@ import config
 import global_vars
 import json_encoders
 import utils
-from local_file import LocalFile
-from polygon_file import PolygonFile
-from problem import ProblemSession
 from exceptions import PolygonNotLoginnedError
+from local_file import LocalFile
+from problem import ProblemSession
 
 
 def load_session():
@@ -134,12 +131,14 @@ def process_commit(args):
             if polygon_text.splitlines() != old_text.splitlines():
                 print('file %s is outdated: update first' % file.name)
                 continue
-            new_text = open(file.get_path(),'r').read()
+            new_text = open(file.get_path(), 'r').read()
             if polygon_text.splitlines() == new_text.splitlines():
                 print('file %s not changed' % file.name)
                 continue
             print('uploading solution %s' % file.name)
             file.update()
+    save_session()
+
 
 def process_list(args):
     if not load_session() or global_vars.problem.sessionId is None:
@@ -159,7 +158,7 @@ def process_list(args):
     for file in local_files:
         if file.name in printed_local:
             continue
-        table.add_row([file.type, '!' + file.polygon_name, file.get_path(), file.name])
+        table.add_row([file.type, '!' + file.polygon_filename, file.get_path(), file.name])
     print(table)
     save_session()
 

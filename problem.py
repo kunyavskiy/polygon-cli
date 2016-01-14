@@ -1,8 +1,8 @@
 import requests
 
 import config
-import utils
 import polygon_file
+import utils
 from exceptions import PolygonNotLoginnedError, ProblemNotFoundError
 from polygon_html_parsers import *
 
