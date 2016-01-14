@@ -52,7 +52,6 @@ def process_init(args):
     global_vars.problem = ProblemSession(config.polygon_url, problem_id)
     global_vars.problem.create_new_session(config.login, config.password)
     save_session()
-    exit(0)
 
 
 def process_relogin(args):
@@ -64,6 +63,7 @@ def process_relogin(args):
     local_files = global_vars.problem.local_files
     process_init([global_vars.problem.problem_id])
     global_vars.problem.local_files = local_files
+    save_session()
 
 
 def process_update(args):
