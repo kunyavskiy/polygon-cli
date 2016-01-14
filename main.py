@@ -16,6 +16,10 @@ from local_file import LocalFile
 from problem import ProblemSession
 
 
+def fatal(error):
+    print(error)
+    exit(0)
+
 def load_session():
     try:
         session_data_json = open(config.get_session_file_path(), 'r').read()
@@ -58,8 +62,7 @@ def process_relogin(args):
     if len(args) != 0:
         print_help()
     if not load_session() or global_vars.problem.problem_id is None:
-        print('No problemId known. Use init instead.')
-        exit(0)
+        fatal('No problemId known. Use init instead.')
     local_files = global_vars.problem.local_files
     process_init([global_vars.problem.problem_id])
     global_vars.problem.local_files = local_files
@@ -68,8 +71,7 @@ def process_relogin(args):
 
 def process_update(args):
     if not load_session() or global_vars.problem.sessionId is None:
-        print('No session known. Use relogin or init first.')
-        exit(0)
+        fatal('No session known. Use relogin or init first.')
     if len(args) == 0:
         files = global_vars.problem.get_all_files_list()
         for file in files:
@@ -101,20 +103,17 @@ def process_update(args):
 
 def process_add(args):
     if not load_session() or global_vars.problem.sessionId is None:
-        print('No session known. Use relogin or init first.')
-        exit(0)
+        fatal('No session known. Use relogin or init first.')
     if len(args) < 2:
         print_help()
     valid_types = ['solution', 'source', 'checker', 'validator']
     if args[0] not in valid_types:
-        print('type should be in ' + str(valid_types))
-        exit(0)
+        fatal('type should be in ' + str(valid_types))
     as_checher = False
     as_validator = False
     if args[0] == 'checker' or args[0] == 'validator':
         if len(args) != 2:
-            print('can''t set several chcekers')
-            exit(0)
+            fatal('can''t set several ' + args[0] + 's')
         if args[0] == 'checker':
             as_checher = True
         else:
@@ -141,8 +140,7 @@ def process_add(args):
 
 def process_commit(args):
     if not load_session() or global_vars.problem.sessionId is None:
-        print('No session known. Use relogin or init first.')
-        exit(0)
+        fatal('No session known. Use relogin or init first.')
     if len(args):
         raise NotImplementedError("uploading not all files")
     files = global_vars.problem.local_files
@@ -182,8 +180,7 @@ def process_commit(args):
 
 def process_list(args):
     if not load_session() or global_vars.problem.sessionId is None:
-        print('No session known. Use relogin or init first.')
-        exit(0)
+        fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.get_all_files_list()
     local_files = global_vars.problem.local_files
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Local name'])
