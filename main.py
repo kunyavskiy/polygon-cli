@@ -6,6 +6,8 @@ import traceback
 from getpass import getpass
 from sys import argv
 
+from prettytable import PrettyTable
+
 import config
 import global_vars
 import json_encoders
@@ -135,8 +137,21 @@ def process_list(args):
         print('No session known. Use relogin or init first.')
         exit(0)
     files = global_vars.problem.get_all_files_list()
+    local_files = global_vars.problem.local_files
+    table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Local name'])
+    printed_local = set()
     for file in files:
-        print('%s\t%s' % (file.type, file.name))
+        local = global_vars.problem.get_local(file)
+        path = local.get_path() if local else 'None'
+        name = local.name if local else 'None'
+        table.add_row([file.type, file.name, path, name])
+        if name:
+            printed_local.add(name)
+    for file in local_files:
+        if file.name in printed_local:
+            continue
+        table.add_row([file.type, '!' + file.polygon_name, file.get_path(), file.name])
+    print(table)
 
 
 def print_help():
