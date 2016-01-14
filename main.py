@@ -105,10 +105,21 @@ def process_add(args):
         exit(0)
     if len(args) < 2:
         print_help()
-    valid_types = ['solution', 'source']
+    valid_types = ['solution', 'source', 'checker', 'validator']
     if args[0] not in valid_types:
         print('type should be in ' + str(valid_types))
         exit(0)
+    as_checher = False
+    as_validator = False
+    if args[0] == 'checker' or args[0] == 'validator':
+        if len(args) != 2:
+            print('can''t set several chcekers')
+            exit(0)
+        if args[0] == 'checker':
+            as_checher = True
+        else:
+            as_validator = True
+        args[0] = 'source'
     for filename in args[1:]:
         local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
         if local is not None:
@@ -119,8 +130,12 @@ def process_add(args):
                           str(os.path.basename(filename).split('.')[0]),
                           args[0]
                           )
-        global_vars.problem.local_files.append(local)
-        local.upload()
+        if local.upload():
+            global_vars.problem.local_files.append(local)
+            if as_checher:
+                global_vars.problem.set_checker_validator(local.polygon_filename, 'checker')
+            if as_validator:
+                global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
     save_session()
 
 

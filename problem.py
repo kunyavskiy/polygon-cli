@@ -193,7 +193,6 @@ class ProblemSession:
             'session': ('', self.sessionId)
         }
         r = self.send_request('POST', self.make_link(url), files=fields)
-        open("results.html", 'w').write(r.text)
         parser = FindUploadErrorParser()
         parser.feed(r.text)
         if parser.error:
@@ -227,6 +226,26 @@ class ProblemSession:
             print(parser.error)
             return False
         return True
+
+    def set_checker_validator(self, polygon_filename, type):
+        """
+        Sets checker or validator
+
+        :type polygon_filename: str
+        :type type: str
+        """
+        fields = {
+            'submitted': ('', 'true'),
+            'file_selected' : ('', polygon_filename),
+            'file_added' : ('', ''),
+            'file_type' : ('', ''),
+            'Set checker' : ('', 'Set ' + type),
+            'ccid': ('', self.ccid),
+            'session': ('', self.sessionId)
+        }
+        url = 'checker' if type == 'checker' else 'validation'
+        r = self.send_request('POST', self.make_link(url), files=fields)
+
 
     def get_local_by_polygon(self, file):
         """

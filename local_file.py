@@ -57,13 +57,15 @@ class LocalFile:
         else:
             raise NotImplementedError("uploading solution of type " + self.type)
         if not global_vars.problem.upload_file(self.filename, prefix, url, content):
-            return
+            return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
         self.polygon_filename = self.filename
+        return True
 
     def update(self):
         assert self.polygon_filename is not None
         content = open(self.get_path(), 'r').read()
         if not global_vars.problem.edit_file(self.filename, self.type, content):
-            return
+            return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
+        return True
