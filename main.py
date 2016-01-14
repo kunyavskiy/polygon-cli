@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import sys
 from getpass import getpass
 from sys import argv
@@ -74,7 +75,7 @@ def process_update(args):
         for file in files:
             if file.type == 'resource':
                 continue
-            local_file = global_vars.problem.get_local(file)
+            local_file = global_vars.problem.get_local_by_polygon(file)
             if local_file is not None:
                 print('Updating local file %s from %s' % (local_file.name, file.name))
                 utils.safe_update_file(local_file.get_internal_path(),
@@ -99,7 +100,28 @@ def process_update(args):
 
 
 def process_add(args):
-    raise NotImplementedError()
+    if not load_session() or global_vars.problem.sessionId is None:
+        print('No session known. Use relogin or init first.')
+        exit(0)
+    if len(args) < 2:
+        print_help()
+    valid_types = ['solution', 'source']
+    if args[0] not in valid_types:
+        print('type should be in ' + str(valid_types))
+        exit(0)
+    for filename in args[1:]:
+        local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
+        if local is not None:
+            print('file %s already added, use commit instead' % os.path.basename(filename))
+            continue
+        local = LocalFile(os.path.basename(filename),
+                          os.path.dirname(filename),
+                          str(os.path.basename(filename).split('.')[0]),
+                          args[0]
+                          )
+        global_vars.problem.local_files.append(local)
+        local.upload()
+    save_session()
 
 
 def process_commit(args):
@@ -112,14 +134,17 @@ def process_commit(args):
     polygon_files = global_vars.problem.get_all_files_list()
     for file in files:
         polygon_file = None
-        for p in polygon_files:
-            if p.name == file.polygon_filename:
-                polygon_file = p
+        if file.polygon_filename:
+            for p in polygon_files:
+                if p.name == file.polygon_filename:
+                    polygon_file = p
         if polygon_file is None:
             file.polygon_filename = None
-            print('polygon_file for %s was removed. Adding it back.' % file.name)
+            if file.polygon_filename:
+                print('polygon_file for %s was removed. Adding it back.' % file.name)
+            else:
+                print('Adding new file %s to polygon' % file.name)
             file.upload()
-            file.polygon_filename = file.filename
         else:
             polygon_text = polygon_file.get_content()
             old_path = file.get_internal_path()
@@ -149,7 +174,7 @@ def process_list(args):
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Local name'])
     printed_local = set()
     for file in files:
-        local = global_vars.problem.get_local(file)
+        local = global_vars.problem.get_local_by_polygon(file)
         path = local.get_path() if local else 'None'
         name = local.name if local else 'None'
         table.add_row([file.type, file.name, path, name])

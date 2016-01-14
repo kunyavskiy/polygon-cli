@@ -228,7 +228,7 @@ class ProblemSession:
             return False
         return True
 
-    def get_local(self, file):
+    def get_local_by_polygon(self, file):
         """
 
         :type file: polygon_file.PolygonFile
@@ -236,5 +236,16 @@ class ProblemSession:
         """
         for local in self.local_files:
             if local.polygon_filename == file.name:
+                return local
+        return None
+
+    def get_local_by_filename(self, filename):
+        """
+
+        :type filename: str
+        :rtype: local_file.LocalFile or None
+        """
+        for local in self.local_files:
+            if local.filename == filename:
                 return local
         return None

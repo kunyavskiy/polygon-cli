@@ -6,12 +6,21 @@ import utils
 
 
 class LocalFile:
-    def __init__(self):
-        self.filename = None
-        self.dir = None
-        self.name = None
-        self.type = None
-        self.polygon_filename = None
+    def __init__(self, filename = None, dir = None, name = None, type = None, polygon_filename = None):
+        """
+
+        :type filename: str or None
+        :type dir: str or None
+        :type name: str or None
+        :type type: str or None
+        :type polygon_filename: str or None
+        """
+        self.filename = filename
+        self.dir = dir
+        self.name = name
+        self.type = type
+        self.polygon_filename = polygon_filename
+
 
     def __repr__(self):
         return str(self.__dict__)
@@ -48,11 +57,14 @@ class LocalFile:
             url = 'files'
         else:
             raise NotImplementedError("uploading solution of type " + self.type)
-        global_vars.problem.upload_file(self.filename, prefix, url, content)
+        if not global_vars.problem.upload_file(self.filename, prefix, url, content):
+            return
         utils.safe_rewrite_file(self.get_internal_path(), content)
+        self.polygon_filename = self.filename
 
     def update(self):
         assert self.polygon_filename is not None
         content = open(self.get_path(), 'r').read()
-        global_vars.problem.edit_file(self.filename, self.type, content)
+        if not global_vars.problem.edit_file(self.filename, self.type, content):
+            return
         utils.safe_rewrite_file(self.get_internal_path(), content)
