@@ -174,22 +174,25 @@ class ProblemSession:
         """
         return self.get_files_list() + self.get_solutions_list()
 
-    def upload_solution(self, name, content):
+    def upload_file(self, name, prefix, url, content):
         """
         Uploads new solution to polygon
 
         :type name: str
+        :type prefix: str
+        :type url: str
         :type content: str
         :rtype: bool
         """
+        file_type = 'cpp.g++11' if name.endswith('.cpp') else ''
         fields = {
-            'solutions_file_type': ('', ''),
+            prefix + '_file_type': ('', file_type),
             'submitted': ('', 'true'),
-            'solutions_file_added': (name, content),
+            prefix + '_file_added': (name, content),
             'ccid': ('', self.ccid),
             'session': ('', self.sessionId)
         }
-        r = self.send_request('POST', self.make_link('solutions'), files=fields)
+        r = self.send_request('POST', self.make_link(url), files=fields)
         open("results.html", 'w').write(r.text)
         parser = FindUploadErrorParser()
         parser.feed(r.text)
@@ -199,16 +202,17 @@ class ProblemSession:
             return False
         return True
 
-    def edit_solution(self, name, content):
+    def edit_file(self, name, file_type, content):
         """
         Edits existing solution in polygon
 
         :type name: str
+        :type file_type: str
         :type content: str
         :rtype: bool
         """
         fields = {
-            'type': 'solutions',
+            'type': file_type,
             'file': name,
             'submitted': 'true',
             'content': content,

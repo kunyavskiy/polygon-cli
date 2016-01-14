@@ -63,7 +63,9 @@ def process_relogin(args):
     if not load_session() or global_vars.problem.problem_id is None:
         print('No problemId known. Use init instead.')
         exit(0)
+    local_files = global_vars.problem.local_files
     process_init([global_vars.problem.problem_id])
+    global_vars.problem.local_files = local_files
 
 
 def process_update(args):
@@ -99,38 +101,45 @@ def process_update(args):
     save_session()
 
 
-def process_send(args):
+def process_add(args):
+    raise NotImplementedError()
+
+
+def process_commit(args):
     if not load_session() or global_vars.problem.sessionId is None:
         print('No session known. Use relogin or init first.')
         exit(0)
-    solutions = global_vars.problem.get_solutions_list()
-    solutions_dict = {i.name: i for i in solutions}
-    for name in args:
-        if name.startswith(config.solutions_path + '/'):
-            name = name[len(config.solutions_path + '/'):]
-        if not os.path.exists(config.get_solution_path(name)):
-            print('solution %s not found' % name)
-            continue
-        if name in solutions_dict:
-            solution = solutions_dict[name]
-            old_path = config.get_download_solution_path(name)
-            if not os.path.exists(old_path):
-                print('solution %s is outdated: update first' % name)
-                continue
-            solution_text = solution.get_content().splitlines()  # TODO: check some fingerprint
-            old_solution_text = open(old_path, 'r').read().splitlines()
-            if solution_text != old_solution_text:
-                print('solution %s is outdated: update first' % name)
-                continue
-            print('uploading solution %s' % name)
-            content = open(config.get_solution_path(name), 'r').read()
-            success = global_vars.problem.edit_solution(name, content)
+    if len(args):
+        raise NotImplementedError("uploading not all files")
+    files = global_vars.problem.local_files
+    polygon_files = global_vars.problem.get_all_files_list()
+    for file in files:
+        polygon_file = None
+        for p in polygon_files:
+            if p.name == file.polygon_filename:
+                polygon_file = p
+        if polygon_file is None:
+            file.polygon_filename = None
+            print('polygon_file for %s was removed. Adding it back.' % file.name)
+            file.upload()
+            file.polygon_filename = file.filename
         else:
-            content = open(config.get_solution_path(name), 'r').read()
-            success = global_vars.problem.upload_solution(name, content)
-        if success:
-            utils.safe_rewrite_file(config.get_download_solution_path(name), content)
-
+            polygon_text = polygon_file.get_content()
+            old_path = file.get_internal_path()
+            try:
+                old_text = open(old_path, 'r').read()
+            except IOError:
+                print('file %s is outdated: update first' % file.name)
+                continue
+            if polygon_text.splitlines() != old_text.splitlines():
+                print('file %s is outdated: update first' % file.name)
+                continue
+            new_text = open(file.get_path(),'r').read()
+            if polygon_text.splitlines() == new_text.splitlines():
+                print('file %s not changed' % file.name)
+                continue
+            print('uploading solution %s' % file.name)
+            file.update()
 
 def process_list(args):
     if not load_session() or global_vars.problem.sessionId is None:
@@ -152,6 +161,7 @@ def process_list(args):
             continue
         table.add_row([file.type, '!' + file.polygon_name, file.get_path(), file.name])
     print(table)
+    save_session()
 
 
 def print_help():
@@ -161,7 +171,8 @@ Supported commands:
     init <problemId>\tinitialize tool for problem <problemId>
     relogin\tCreate new polygon http session for same problem
     update\tDownload all solutions from working copy, and merges with local copy
-    send <files>\tUpload files as solutions
+    commit\tPuts all changes to polygon. NOT COMMITING YET!!!!
+    add <type> <files>\tUpload files as solutions
     list\tlist of files in polygon
 """)
     exit(1)
@@ -177,8 +188,10 @@ def main():
             process_relogin(argv[2:])
         elif argv[1] == 'update':
             process_update(argv[2:])
-        elif argv[1] == 'send':
-            process_send(argv[2:])
+        elif argv[1] == 'add':
+            process_add(argv[2:])
+        elif argv[1] == 'commit':
+            process_commit(argv[2:])
         elif argv[1] == 'list':
             process_list(argv[2:])
         else:

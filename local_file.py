@@ -2,6 +2,7 @@ import os
 
 import config
 import global_vars
+import utils
 
 
 class LocalFile:
@@ -37,14 +38,22 @@ class LocalFile:
 
     def upload(self):
         assert self.polygon_filename is None
-        if type == 'solution':
-            return global_vars.problem.upload_solution(self.name, open(self.get_path(), 'r').read())
+        content = open(self.get_path(), 'r').read()
+        prefix = None
+        url = None
+        if self.type == 'solution':
+            prefix = 'solutions'
+            url = 'solutions'
+        elif self.type == 'source':
+            prefix = 'source'
+            url = 'files'
         else:
-            raise NotImplementedError("uploading file with type" + self.type)
+            raise NotImplementedError("uploading solution of type " + self.type)
+        global_vars.problem.upload_file(self.filename, prefix, url, content)
+        utils.safe_rewrite_file(self.get_internal_path(), content)
 
     def update(self):
         assert self.polygon_filename is not None
-        if type == 'solution':
-            return global_vars.problem.update_solution(self.polygon_filename, open(self.get_path(), 'r').read())
-        else:
-            raise NotImplementedError("updating file with type " + self.type)
+        content = open(self.get_path(), 'r').read()
+        global_vars.problem.edit_file(self.filename, self.type, content)
+        utils.safe_rewrite_file(self.get_internal_path(), content)
