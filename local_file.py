@@ -6,7 +6,7 @@ import utils
 
 
 class LocalFile:
-    def __init__(self, filename = None, dir = None, name = None, type = None, polygon_filename = None):
+    def __init__(self, filename=None, dir=None, name=None, type=None, polygon_filename=None):
         """
 
         :type filename: str or None
@@ -20,7 +20,6 @@ class LocalFile:
         self.name = name
         self.type = type
         self.polygon_filename = polygon_filename
-
 
     def __repr__(self):
         return str(self.__dict__)
