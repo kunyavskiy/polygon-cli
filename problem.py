@@ -223,3 +223,14 @@ class ProblemSession:
             print(parser.error)
             return False
         return True
+
+    def get_local(self, file):
+        """
+
+        :type file: polygon_file.PolygonFile
+        :rtype: local_file.LocalFile or None
+        """
+        for local in self.local_files:
+            if local.polygon_filename == file.name:
+                return local
+        return None

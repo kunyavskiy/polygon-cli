@@ -2,12 +2,16 @@
 import json
 import os
 import sys
+import traceback
 from getpass import getpass
 from sys import argv
 
 import config
 import global_vars
+import json_encoders
 import utils
+from local_file import LocalFile
+from polygon_file import PolygonFile
 from problem import ProblemSession
 from exceptions import PolygonNotLoginnedError
 
@@ -15,7 +19,7 @@ from exceptions import PolygonNotLoginnedError
 def load_session():
     try:
         session_data_json = open(config.get_session_file_path(), 'r').read()
-        session_data = json.loads(session_data_json)
+        session_data = json.loads(session_data_json, object_hook=json_encoders.my_json_decoder)
         global_vars.problem = ProblemSession(config.polygon_url, session_data["problemId"])
         global_vars.problem.use_ready_session(session_data)
         return True
@@ -25,7 +29,7 @@ def load_session():
 
 def save_session():
     session_data = global_vars.problem.dump_session()
-    session_data_json = json.dumps(session_data, sort_keys=True, indent='  ')
+    session_data_json = json.dumps(session_data, sort_keys=True, indent='  ', default=json_encoders.my_json_encoder)
     utils.safe_rewrite_file(config.get_session_file_path(), session_data_json)
 
 
@@ -54,51 +58,47 @@ def process_init(args):
 def process_relogin(args):
     if len(args) != 0:
         print_help()
-    load_session()
-    if global_vars.problem.problem_id is None:
+    if not load_session() or global_vars.problem.problem_id is None:
         print('No problemId known. Use init instead.')
         exit(0)
     process_init([global_vars.problem.problem_id])
 
 
-def download_solution(url):
-    solution_text = global_vars.problem.send_request('GET', url).text
-    return solution_text.replace(' \r\n', '\r\n')
-
-
 def process_update(args):
-    load_session()
-    if global_vars.problem.sessionId is None:
+    if not load_session() or global_vars.problem.sessionId is None:
         print('No session known. Use relogin or init first.')
         exit(0)
-    solutions = global_vars.problem.get_solutions_list()
-    try:
-        local_solutions = utils.get_local_solutions()
-    except FileNotFoundError:
-        local_solutions = []
-
-    local_solutions = set(local_solutions)
-
-    for solution in solutions:
-        if len(args) and solution.name not in args:
-            print('ignoring solution ' + solution.name)
-            continue
-        solution_text = download_solution(solution.download_link)
-        if solution.name not in local_solutions:
-            print('New solution found: %s' % solution.name)
-            utils.safe_rewrite_file(config.get_solution_path(solution.name), solution_text)
-        else:
-            print('Updating solution %s' % solution.name)
-            old_path = config.get_download_solution_path(solution.name)
-            if not os.path.exists(old_path):
-                utils.safe_rewrite_file(old_path, '')
-            utils.safe_update_file(old_path, config.get_solution_path(solution.name), solution_text)
+    if len(args) == 0:
+        files = global_vars.problem.get_all_files_list()
+        for file in files:
+            if file.type == 'resource':
+                continue
+            local_file = global_vars.problem.get_local(file)
+            if local_file is not None:
+                print('Updating local file %s from %s' % (local_file.name, file.name))
+                utils.safe_update_file(local_file.get_internal_path(),
+                                       local_file.get_path(),
+                                       file.get_content()
+                                       )
+            else:
+                local_file = LocalFile()
+                local_file.name = file.name.split('.')[0]
+                local_file.dir = file.get_default_local_dir()
+                local_file.type = file.type
+                local_file.filename = file.name
+                local_file.polygon_filename = file.name
+                print('Downloading new file %s to %s' % (file.name, local_file.get_path()))
+                content = file.get_content()
+                utils.safe_rewrite_file(local_file.get_path(), content)
+                utils.safe_rewrite_file(local_file.get_internal_path(), content)
+                global_vars.problem.local_files.append(local_file)
+    else:
+        raise NotImplementedError("updating not all files")
     save_session()
 
 
 def process_send(args):
-    load_session()
-    if global_vars.problem.sessionId is None:
+    if not load_session() or global_vars.problem.sessionId is None:
         print('No session known. Use relogin or init first.')
         exit(0)
     solutions = global_vars.problem.get_solutions_list()
@@ -115,7 +115,7 @@ def process_send(args):
             if not os.path.exists(old_path):
                 print('solution %s is outdated: update first' % name)
                 continue
-            solution_text = download_solution(solution.download_link).splitlines()  # TODO: check some fingerprint
+            solution_text = solution.get_content().splitlines()  # TODO: check some fingerprint
             old_solution_text = open(old_path, 'r').read().splitlines()
             if solution_text != old_solution_text:
                 print('solution %s is outdated: update first' % name)
@@ -131,8 +131,7 @@ def process_send(args):
 
 
 def process_list(args):
-    load_session()
-    if global_vars.problem.sessionId is None:
+    if not load_session() or global_vars.problem.sessionId is None:
         print('No session known. Use relogin or init first.')
         exit(0)
     files = global_vars.problem.get_all_files_list()

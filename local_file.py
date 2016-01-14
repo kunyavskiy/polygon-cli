@@ -1,7 +1,7 @@
 import os
 
+import config
 import global_vars
-from polygon_file import PolygonFile
 
 
 class LocalFile:
@@ -27,16 +27,24 @@ class LocalFile:
         """
         return os.path.join(self.dir, self.filename)
 
+    def get_internal_path(self):
+        """
+
+        :rtype: str
+        """
+        return os.path.join(config.internal_directory_path, self.filename)
+
+
     def upload(self):
         assert self.polygon_filename is None
         if type == 'solution':
             return global_vars.problem.upload_solution(self.name, open(self.get_path(), 'r').read())
         else:
-            raise NotImplementedError
+            raise NotImplementedError("uploading file with type" + self.type)
 
     def update(self):
         assert self.polygon_filename is not None
         if type == 'solution':
             return global_vars.problem.update_solution(self.polygon_filename, open(self.get_path(), 'r').read())
         else:
-            raise NotImplementedError
+            raise NotImplementedError("updating file with type " + self.type)
