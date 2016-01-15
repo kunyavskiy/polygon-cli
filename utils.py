@@ -21,29 +21,19 @@ def merge_files(old, our, theirs):
         print('Conflict in file %s' % our)
     elif p.returncode != 0:
         raise Exception("diff3 failed!")
-    safe_rewrite_file_bin(our, diff3out)
+    safe_rewrite_file(our, diff3out, 'wb')
 
 
-def safe_rewrite_file(path, content):
-    if not os.path.exists(os.path.dirname(path)):
-        os.makedirs(os.path.dirname(path))
+def safe_rewrite_file(path, content, openmode = 'w'):
+    dir_name = os.path.dirname(path)
+    if dir_name and not os.path.exists(dir_name):
+        os.makedirs(dir_name)
     if os.path.exists(path):
         shutil.copy(path, path + ".$$$")
-        open(path, 'w').write(content)
+        open(path, openmode).write(content)
         os.remove(path + '.$$$')
     else:
-        open(path, 'w').write(content)
-
-
-def safe_rewrite_file_bin(path, content):
-    if not os.path.exists(os.path.dirname(path)):
-        os.makedirs(os.path.dirname(path))
-    if os.path.exists(path):
-        shutil.copy(path, path + ".$$$")
-        open(path, 'wb').write(content)
-        os.remove(path + '.$$$')
-    else:
-        open(path, 'wb').write(content)
+        open(path, openmode).write(content)
 
 
 def safe_update_file(old_path, new_path, content):
