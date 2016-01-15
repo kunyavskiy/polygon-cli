@@ -204,12 +204,12 @@ def print_help():
     print("""
 polygon-cli Tool for using polygon from commandline
 Supported commands:
-    init <problemId>\tinitialize tool for problem <problemId>
-    relogin\tCreate new polygon http session for same problem
-    update\tDownload all solutions from working copy, and merges with local copy
-    commit\tPuts all changes to polygon. NOT COMMITING YET!!!!
-    add <type> <files>\tUpload files as solutions
-    list\tlist of files in polygon
+    init <problemId>\tInitialize tool for problem <problemId>
+    relogin\t\tCreate new polygon http session for same problem
+    update\t\tDownload all files from polygon working copy, and merge with local copy
+    commit\t\tPut all local changes to polygon. NOT COMMITING YET!!!!
+    add <type> <files>\tUpload files as <type>. <type> can be 'solution', 'source', 'validator' or 'checker'
+    list\t\tList files in polygon
 """)
     exit(1)
 
