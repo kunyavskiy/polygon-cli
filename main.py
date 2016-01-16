@@ -173,7 +173,7 @@ def process_commit(args):
             if polygon_text.splitlines() == new_text.splitlines():
                 print('file %s not changed' % file.name)
                 continue
-            print('uploading solution %s' % file.name)
+            print('uploading file %s' % file.name)
             file.update()
     save_session()
 

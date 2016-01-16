@@ -210,6 +210,8 @@ class ProblemSession:
         :type content: str
         :rtype: bool
         """
+        if (file_type == 'solution'):
+            file_type = 'solutions' # because of edit link in polygon
         fields = {
             'type': file_type,
             'file': name,
