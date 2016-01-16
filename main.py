@@ -109,13 +109,13 @@ def process_add(args):
     valid_types = ['solution', 'source', 'checker', 'validator']
     if args[0] not in valid_types:
         fatal('type should be in ' + str(valid_types))
-    as_checher = False
+    as_checker = False
     as_validator = False
     if args[0] == 'checker' or args[0] == 'validator':
         if len(args) != 2:
             fatal('can''t set several ' + args[0] + 's')
         if args[0] == 'checker':
-            as_checher = True
+            as_checker = True
         else:
             as_validator = True
         args[0] = 'source'
@@ -131,7 +131,7 @@ def process_add(args):
                           )
         if local.upload():
             global_vars.problem.local_files.append(local)
-            if as_checher:
+            if as_checker:
                 global_vars.problem.set_checker_validator(local.polygon_filename, 'checker')
             if as_validator:
                 global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
