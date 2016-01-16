@@ -119,22 +119,29 @@ def process_add(args):
         else:
             as_validator = True
         args[0] = 'source'
+    table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for filename in args[1:]:
         local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
         if local is not None:
             print('file %s already added, use commit instead' % os.path.basename(filename))
-            continue
-        local = LocalFile(os.path.basename(filename),
-                          os.path.dirname(filename),
-                          str(os.path.basename(filename).split('.')[0]),
-                          args[0]
-                          )
-        if local.upload():
-            global_vars.problem.local_files.append(local)
-            if as_checker:
-                global_vars.problem.set_checker_validator(local.polygon_filename, 'checker')
-            if as_validator:
-                global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
+            status = 'Already added'
+        else:
+            local = LocalFile(os.path.basename(filename),
+                              os.path.dirname(filename),
+                              str(os.path.basename(filename).split('.')[0]),
+                              args[0]
+                              )
+            if local.upload():
+                status = 'Uploaded'
+                global_vars.problem.local_files.append(local)
+                if as_checker:
+                    global_vars.problem.set_checker_validator(local.polygon_filename, 'checker')
+                if as_validator:
+                    global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
+            else:
+                status = 'Error'
+        table.add_row([local.type, local.polygon_filename, local.filename, status])
+    print(table)
     save_session()
 
 
