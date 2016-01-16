@@ -1,9 +1,8 @@
 import sys
 
-import requests
-
 import config
 import polygon_file
+import requests
 import utils
 from exceptions import PolygonNotLoginnedError, ProblemNotFoundError
 from polygon_html_parsers import *
@@ -213,7 +212,7 @@ class ProblemSession:
         :type content: str
         :rtype: bool
         """
-        if (file_type == 'solution'):
+        if file_type == 'solution':
             file_type = 'solutions'  # because of edit link in polygon
         fields = {
             'type': file_type,
@@ -249,7 +248,7 @@ class ProblemSession:
             'session': ('', self.sessionId)
         }
         url = 'checker' if type == 'checker' else 'validation'
-        r = self.send_request('POST', self.make_link(url), files=fields)
+        self.send_request('POST', self.make_link(url), files=fields)
 
     def get_local_by_polygon(self, file):
         """

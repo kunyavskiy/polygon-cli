@@ -1,7 +1,7 @@
 import os
 
-import global_vars
 import config
+import global_vars
 import utils
 
 
@@ -46,8 +46,6 @@ class LocalFile:
     def upload(self):
         assert self.polygon_filename is None
         content = open(self.get_path(), 'r').read()
-        prefix = None
-        url = None
         if self.type == 'solution':
             prefix = 'solutions'
             url = 'solutions'

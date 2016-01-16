@@ -5,15 +5,14 @@ import sys
 from getpass import getpass
 from sys import argv
 
-import global_vars
-import json_encoders
-from prettytable import PrettyTable
-
 import colors
 import config
+import global_vars
+import json_encoders
 import utils
 from exceptions import PolygonNotLoginnedError
 from local_file import LocalFile
+from prettytable import PrettyTable
 from problem import ProblemSession
 
 
