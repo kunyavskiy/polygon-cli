@@ -4,3 +4,6 @@ solutions
 src
 __pycache__
 *.html
+build
+dist
+*.egg-info
