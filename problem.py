@@ -1,4 +1,5 @@
 import requests
+import sys
 
 import config
 import polygon_file
@@ -83,6 +84,7 @@ class ProblemSession:
         :raises: PolygonNotLoginnedError
         """
         print('Sending request to ' + utils.prepare_url_print(url), end=' ')
+        sys.stdout.flush()
         result = self.session.request(method, url, **kw)
         print(result.status_code)
         if result.url and result.url.startswith(config.polygon_url + '/login'):
