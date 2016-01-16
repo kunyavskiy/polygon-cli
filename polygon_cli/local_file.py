@@ -1,7 +1,7 @@
 import os
 
-import config
 import global_vars
+import config
 import utils
 
 

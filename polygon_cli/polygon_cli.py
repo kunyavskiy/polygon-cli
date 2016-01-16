@@ -5,16 +5,17 @@ import sys
 from getpass import getpass
 from sys import argv
 
-import colors
-from prettytable import PrettyTable
-
-import config
 import global_vars
 import json_encoders
+from prettytable import PrettyTable
+
+import colors
+import config
 import utils
 from exceptions import PolygonNotLoginnedError
 from local_file import LocalFile
 from problem import ProblemSession
+
 
 def fatal(error):
     print(error)
@@ -79,7 +80,11 @@ def process_update(args):
         if file.type == 'resource':
             continue
         local_file = global_vars.problem.get_local_by_polygon(file)
-        if args and not (file.name in args or local_file.name in args or local_file.filename in args or local_file.get_path() in args):
+        need_file = file.name in args or \
+                    local_file.name in args or \
+                    local_file.filename in args or \
+                    local_file.get_path() in args
+        if args and not need_file:
             continue
         if local_file is not None:
             print('Updating local file %s from %s' % (local_file.name, file.name))
@@ -167,7 +172,11 @@ def process_commit(args):
             for p in polygon_files:
                 if p.name == file.polygon_filename:
                     polygon_file = p
-        if args and not (polygon_file.name in args or file.name in args or file.filename in args or file.get_path() in args):
+        need_file = polygon_file.name in args or \
+                    file.name in args or \
+                    file.filename in args or \
+                    file.get_path() in args
+        if args and not need_file:
             continue
         if polygon_file is None:
             file.polygon_filename = None
