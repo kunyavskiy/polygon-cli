@@ -4,7 +4,7 @@ import os
 import shutil
 from subprocess import Popen, PIPE
 
-import config
+from . import config
 
 
 def read_file(filename):

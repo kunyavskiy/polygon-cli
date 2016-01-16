@@ -1,5 +1,5 @@
-from local_file import LocalFile
-from polygon_file import PolygonFile
+from .local_file import LocalFile
+from .polygon_file import PolygonFile
 
 
 def my_json_encoder(obj):

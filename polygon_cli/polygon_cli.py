@@ -5,15 +5,16 @@ import sys
 from getpass import getpass
 from sys import argv
 
-import colors
-import config
-import global_vars
-import json_encoders
-import utils
-from exceptions import PolygonNotLoginnedError
-from local_file import LocalFile
 from prettytable import PrettyTable
-from problem import ProblemSession
+
+from . import colors
+from . import config
+from . import global_vars
+from . import json_encoders
+from . import utils
+from .exceptions import PolygonNotLoginnedError
+from .local_file import LocalFile
+from .problem import ProblemSession
 
 
 def fatal(error):

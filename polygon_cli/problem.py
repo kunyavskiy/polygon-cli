@@ -1,11 +1,12 @@
 import sys
 
-import config
-import polygon_file
 import requests
-import utils
-from exceptions import PolygonNotLoginnedError, ProblemNotFoundError
-from polygon_html_parsers import *
+
+from . import config
+from . import polygon_file
+from . import utils
+from .exceptions import PolygonNotLoginnedError, ProblemNotFoundError
+from .polygon_html_parsers import *
 
 
 class ProblemSession:

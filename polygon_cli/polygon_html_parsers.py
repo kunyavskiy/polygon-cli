@@ -1,7 +1,7 @@
 from html.entities import name2codepoint
 from html.parser import HTMLParser
 
-from polygon_file import PolygonFile
+from .polygon_file import PolygonFile
 
 
 class ExtractCCIDParser(HTMLParser):

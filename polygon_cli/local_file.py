@@ -1,8 +1,8 @@
 import os
 
-import config
-import global_vars
-import utils
+from . import config
+from . import global_vars
+from . import utils
 
 
 class LocalFile:
