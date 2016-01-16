@@ -1,5 +1,6 @@
-import requests
 import sys
+
+import requests
 
 import config
 import polygon_file

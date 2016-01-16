@@ -15,13 +15,18 @@ def read_file(filename):
 
 
 def merge_files(old, our, theirs):
+    if open(old, 'r').read().splitlines() == open(theirs, 'r').read().splitlines():
+        return 'Not changed'
     p = Popen(config.get_merge_tool(old, our, theirs), stdout=PIPE, shell=True)
     diff3out, _ = p.communicate()
+    return_value = 'Merged'
     if p.returncode == 1:
         print('Conflict in file %s' % our)
+        return_value = 'Conflict'
     elif p.returncode != 0:
         raise Exception("diff3 failed!")
     safe_rewrite_file(our, diff3out, 'wb')
+    return return_value
 
 
 def safe_rewrite_file(path, content, openmode='w'):
@@ -38,8 +43,9 @@ def safe_rewrite_file(path, content, openmode='w'):
 
 def safe_update_file(old_path, new_path, content):
     open(old_path + '.new', 'w').write(content)
-    merge_files(old_path, new_path, old_path + '.new')
+    return_value = merge_files(old_path, new_path, old_path + '.new')
     shutil.move(old_path + '.new', old_path)
+    return return_value
 
 
 def prepare_url_print(url):

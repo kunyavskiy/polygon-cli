@@ -74,6 +74,7 @@ def process_update(args):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.get_all_files_list()
+    table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for file in files:
         if file.type == 'resource':
             continue
@@ -82,11 +83,12 @@ def process_update(args):
             continue
         if local_file is not None:
             print('Updating local file %s from %s' % (local_file.name, file.name))
-            utils.safe_update_file(local_file.get_internal_path(),
-                                   local_file.get_path(),
-                                   file.get_content()
-                                   )
+            status = utils.safe_update_file(local_file.get_internal_path(),
+                                            local_file.get_path(),
+                                            file.get_content()
+                                            )
         else:
+            status = 'New'
             local_file = LocalFile()
             local_file.name = file.name.split('.')[0]
             local_file.dir = file.get_default_local_dir()
@@ -98,6 +100,8 @@ def process_update(args):
             utils.safe_rewrite_file(local_file.get_path(), content)
             utils.safe_rewrite_file(local_file.get_internal_path(), content)
             global_vars.problem.local_files.append(local_file)
+        table.add_row([file.type, file.name, local_file.get_path(), status])
+    print(table)
     save_session()
 
 
