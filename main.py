@@ -20,6 +20,7 @@ def fatal(error):
     print(error)
     exit(0)
 
+
 def load_session():
     try:
         session_data_json = open(config.get_session_file_path(), 'r').read()

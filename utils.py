@@ -24,7 +24,7 @@ def merge_files(old, our, theirs):
     safe_rewrite_file(our, diff3out, 'wb')
 
 
-def safe_rewrite_file(path, content, openmode = 'w'):
+def safe_rewrite_file(path, content, openmode='w'):
     dir_name = os.path.dirname(path)
     if dir_name and not os.path.exists(dir_name):
         os.makedirs(dir_name)
