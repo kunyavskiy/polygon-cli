@@ -73,32 +73,31 @@ def process_relogin(args):
 def process_update(args):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
-    if len(args) == 0:
-        files = global_vars.problem.get_all_files_list()
-        for file in files:
-            if file.type == 'resource':
-                continue
-            local_file = global_vars.problem.get_local_by_polygon(file)
-            if local_file is not None:
-                print('Updating local file %s from %s' % (local_file.name, file.name))
-                utils.safe_update_file(local_file.get_internal_path(),
+    files = global_vars.problem.get_all_files_list()
+    for file in files:
+        if file.type == 'resource':
+            continue
+        local_file = global_vars.problem.get_local_by_polygon(file)
+        if args and not (file.name in args or local_file.name in args or local_file.filename in args or local_file.get_path() in args):
+            continue
+        if local_file is not None:
+            print('Updating local file %s from %s' % (local_file.name, file.name))
+            utils.safe_update_file(local_file.get_internal_path(),
                                        local_file.get_path(),
                                        file.get_content()
                                        )
-            else:
-                local_file = LocalFile()
-                local_file.name = file.name.split('.')[0]
-                local_file.dir = file.get_default_local_dir()
-                local_file.type = file.type
-                local_file.filename = file.name
-                local_file.polygon_filename = file.name
-                print('Downloading new file %s to %s' % (file.name, local_file.get_path()))
-                content = file.get_content()
-                utils.safe_rewrite_file(local_file.get_path(), content)
-                utils.safe_rewrite_file(local_file.get_internal_path(), content)
-                global_vars.problem.local_files.append(local_file)
-    else:
-        raise NotImplementedError("updating not all files")
+        else:
+            local_file = LocalFile()
+            local_file.name = file.name.split('.')[0]
+            local_file.dir = file.get_default_local_dir()
+            local_file.type = file.type
+            local_file.filename = file.name
+            local_file.polygon_filename = file.name
+            print('Downloading new file %s to %s' % (file.name, local_file.get_path()))
+            content = file.get_content()
+            utils.safe_rewrite_file(local_file.get_path(), content)
+            utils.safe_rewrite_file(local_file.get_internal_path(), content)
+            global_vars.problem.local_files.append(local_file)
     save_session()
 
 
