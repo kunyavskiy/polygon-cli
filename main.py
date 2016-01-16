@@ -141,8 +141,6 @@ def process_add(args):
 def process_commit(args):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
-    if len(args):
-        raise NotImplementedError("uploading not all files")
     files = global_vars.problem.local_files
     polygon_files = global_vars.problem.get_all_files_list()
     for file in files:
@@ -151,6 +149,8 @@ def process_commit(args):
             for p in polygon_files:
                 if p.name == file.polygon_filename:
                     polygon_file = p
+        if args and not (polygon_file.name in args or file.name in args or file.filename in args or file.get_path() in args):
+            continue
         if polygon_file is None:
             file.polygon_filename = None
             if file.polygon_filename:
