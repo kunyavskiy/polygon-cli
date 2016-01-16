@@ -6,6 +6,7 @@ Command-line tool for polygon
 * Python 3 (tested on 3.4)
 * requests lib
 * prettytable lib
+* colorama lib
 * diff3 avalible in path
 
 ## Suppoted fetures

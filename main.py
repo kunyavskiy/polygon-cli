@@ -5,6 +5,7 @@ import sys
 from getpass import getpass
 from sys import argv
 
+import colors
 from prettytable import PrettyTable
 
 import config
@@ -14,7 +15,6 @@ import utils
 from exceptions import PolygonNotLoginnedError
 from local_file import LocalFile
 from problem import ProblemSession
-
 
 def fatal(error):
     print(error)
@@ -87,8 +87,14 @@ def process_update(args):
                                             local_file.get_path(),
                                             file.get_content()
                                             )
+            if status == 'Not changed':
+                status = colors.info(status)
+            elif status == 'Conflict':
+                status = colors.error(status)
+            else:
+                status = colors.warning(status)
         else:
-            status = 'New'
+            status = colors.success('New')
             local_file = LocalFile()
             local_file.name = file.name.split('.')[0]
             local_file.dir = file.get_default_local_dir()
@@ -128,7 +134,7 @@ def process_add(args):
         local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
         if local is not None:
             print('file %s already added, use commit instead' % os.path.basename(filename))
-            status = 'Already added'
+            status = colors.warning('Already added')
         else:
             local = LocalFile(os.path.basename(filename),
                               os.path.dirname(filename),
@@ -136,14 +142,14 @@ def process_add(args):
                               args[0]
                               )
             if local.upload():
-                status = 'Uploaded'
+                status = colors.success('Uploaded')
                 global_vars.problem.local_files.append(local)
                 if as_checker:
                     global_vars.problem.set_checker_validator(local.polygon_filename, 'checker')
                 if as_validator:
                     global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
             else:
-                status = 'Error'
+                status = colors.error('Error')
         table.add_row([local.type, local.polygon_filename, local.filename, status])
     print(table)
     save_session()
@@ -166,13 +172,13 @@ def process_commit(args):
         if polygon_file is None:
             file.polygon_filename = None
             if file.polygon_filename:
-                status = 'Returned'
+                status = colors.success('Returned')
                 print('polygon_file for %s was removed. Adding it back.' % file.name)
             else:
-                status = 'New'
+                status = colors.success('New')
                 print('Adding new file %s to polygon' % file.name)
             if not file.upload():
-                status = 'Error'
+                status = colors.error('Error')
             table.add_row([file.type, file.polygon_filename, file.get_path(), status])
         else:
             polygon_text = polygon_file.get_content()
@@ -182,23 +188,23 @@ def process_commit(args):
                 try:
                     old_text = open(old_path, 'r').read()
                 except IOError:
-                    status = 'Outdated'
+                    status = colors.warning('Outdated')
                     print('file %s is outdated: update first' % file.name)
                     break
                 if polygon_text.splitlines() != old_text.splitlines():
-                    status = 'Outdated'
+                    status = colors.warning('Outdated')
                     print('file %s is outdated: update first' % file.name)
                     break
                 new_text = open(file.get_path(), 'r').read()
                 if polygon_text.splitlines() == new_text.splitlines():
-                    status = 'Not changed'
+                    status = colors.info('Not changed')
                     print('file %s not changed' % file.name)
                     break
                 print('uploading file %s' % file.name)
                 if file.update():
-                    status = 'Modified'
+                    status = colors.success('Modified')
                 else:
-                    status = 'Error'
+                    status = colors.error('Error')
                 break
             table.add_row([file.type, file.polygon_filename, file.get_path(), status])
     print(table)
