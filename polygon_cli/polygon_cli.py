@@ -81,9 +81,8 @@ def process_update(args):
             continue
         local_file = global_vars.problem.get_local_by_polygon(file)
         need_file = file.name in args or \
-                    local_file.name in args or \
-                    local_file.filename in args or \
-                    local_file.get_path() in args
+                    local_file is not None and \
+                    (local_file.name in args or local_file.filename in args or local_file.get_path() in args)
         if args and not need_file:
             continue
         if local_file is not None:
@@ -172,7 +171,7 @@ def process_commit(args):
             for p in polygon_files:
                 if p.name == file.polygon_filename:
                     polygon_file = p
-        need_file = polygon_file.name in args or \
+        need_file = (polygon_file is not None and polygon_file.name in args) or \
                     file.name in args or \
                     file.filename in args or \
                     file.get_path() in args
