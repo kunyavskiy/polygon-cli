@@ -83,9 +83,9 @@ def process_update(args):
         if local_file is not None:
             print('Updating local file %s from %s' % (local_file.name, file.name))
             utils.safe_update_file(local_file.get_internal_path(),
-                                       local_file.get_path(),
-                                       file.get_content()
-                                       )
+                                   local_file.get_path(),
+                                   file.get_content()
+                                   )
         else:
             local_file = LocalFile()
             local_file.name = file.name.split('.')[0]
@@ -143,6 +143,7 @@ def process_commit(args):
         fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.local_files
     polygon_files = global_vars.problem.get_all_files_list()
+    table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for file in files:
         polygon_file = None
         if file.polygon_filename:
@@ -154,27 +155,42 @@ def process_commit(args):
         if polygon_file is None:
             file.polygon_filename = None
             if file.polygon_filename:
+                status = 'Returned'
                 print('polygon_file for %s was removed. Adding it back.' % file.name)
             else:
+                status = 'New'
                 print('Adding new file %s to polygon' % file.name)
-            file.upload()
+            if not file.upload():
+                status = 'Error'
+            table.add_row([file.type, file.polygon_filename, file.get_path(), status])
         else:
             polygon_text = polygon_file.get_content()
             old_path = file.get_internal_path()
-            try:
-                old_text = open(old_path, 'r').read()
-            except IOError:
-                print('file %s is outdated: update first' % file.name)
-                continue
-            if polygon_text.splitlines() != old_text.splitlines():
-                print('file %s is outdated: update first' % file.name)
-                continue
-            new_text = open(file.get_path(), 'r').read()
-            if polygon_text.splitlines() == new_text.splitlines():
-                print('file %s not changed' % file.name)
-                continue
-            print('uploading file %s' % file.name)
-            file.update()
+            status = ''
+            while True:
+                try:
+                    old_text = open(old_path, 'r').read()
+                except IOError:
+                    status = 'Outdated'
+                    print('file %s is outdated: update first' % file.name)
+                    break
+                if polygon_text.splitlines() != old_text.splitlines():
+                    status = 'Outdated'
+                    print('file %s is outdated: update first' % file.name)
+                    break
+                new_text = open(file.get_path(), 'r').read()
+                if polygon_text.splitlines() == new_text.splitlines():
+                    status = 'Not changed'
+                    print('file %s not changed' % file.name)
+                    break
+                print('uploading file %s' % file.name)
+                if file.update():
+                    status = 'Modified'
+                else:
+                    status = 'Error'
+                break
+            table.add_row([file.type, file.polygon_filename, file.get_path(), status])
+    print(table)
     save_session()
 
 
