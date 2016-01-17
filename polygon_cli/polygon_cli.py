@@ -251,6 +251,28 @@ def process_list(args):
     save_session()
 
 
+def process_diff(args):
+    if not load_session() or global_vars.problem.sessionId is None:
+        fatal('No session known. Use relogin or init first.')
+    if len(args) != 1:
+        fatal('Exactly one file should be given to diff')
+    file = global_vars.problem.get_local_by_filename(args[0])
+    if file is None:
+        fatal('File %s not found' % args[0])
+    polygon_files = global_vars.problem.get_all_files_list()
+    polygon_file = None
+    if file.polygon_filename:
+        for p in polygon_files:
+            if p.name == file.polygon_filename:
+                polygon_file = p
+    if polygon_file is None:
+        fatal('File %s not matched to any file in polygon')
+    polygon_text = polygon_file.get_content()
+    old_path = file.get_internal_path()
+    utils.diff_file_with_content(old_path, file.get_path(), polygon_text)
+    save_session()
+
+
 def print_help():
     print("""
 polygon-cli Tool for using polygon from commandline
@@ -261,6 +283,7 @@ Supported commands:
     commit\t\tPut all local changes to polygon. NOT COMMITING YET!!!!
     add <type> <files>\tUpload files as <type>. <type> can be 'solution', 'source', 'validator' or 'checker'
     list\t\tList files in polygon
+    diff\t\tPrints diff of local and polygon version of file
 """)
     exit(1)
 
@@ -281,6 +304,8 @@ def main():
             process_commit(argv[2:])
         elif argv[1] == 'list':
             process_list(argv[2:])
+        elif argv[1] == 'diff':
+            process_diff(argv[2:])
         else:
             print_help()
     except PolygonNotLoginnedError:

@@ -22,3 +22,7 @@ def get_download_solution_path(solution):
 
 def get_merge_tool(old, our, theirs):
     return ' '.join(["diff3", "--strip-trailing-cr", "--merge", our, old, theirs])
+
+
+def get_diff_tool(old, our, theirs):
+    return ' '.join(["diff", theirs, our])
