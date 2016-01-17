@@ -82,6 +82,10 @@ def process_update(args):
         fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
+    flat = False
+    if args and args[0] == '--flat':  # TODO: getopt or something like it
+        flat = True
+        args = args[1:]
     for file in files:
         if file.type == 'resource':
             continue
@@ -107,7 +111,7 @@ def process_update(args):
             status = colors.success('New')
             local_file = LocalFile()
             local_file.name = file.name.split('.')[0]
-            local_file.dir = file.get_default_local_dir()
+            local_file.dir = '' if flat else file.get_default_local_dir()
             local_file.type = file.type
             local_file.filename = file.name
             local_file.polygon_filename = file.name
