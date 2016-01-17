@@ -2,9 +2,8 @@
 
 import os
 import shutil
-from subprocess import Popen, PIPE
-
 import sys
+from subprocess import Popen, PIPE
 
 from . import config
 
