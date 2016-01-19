@@ -1,5 +1,5 @@
 # polygon-cli
-Command-line tool for polygon
+Command-line tool for [polygon](https://polygon.codeforces.com/)
 
 ##Requirments
 
@@ -9,11 +9,11 @@ Command-line tool for polygon
 * colorama lib
 * diff3 avalible in path
 
-## Suppoted fetures
+## Supported features
 
-* Downloadings solutions and resources from polygon
-* Uploading them to polygon back
-* Automatic merging with conflicts
+* Downloadings solutions and resources from polygon.
+* Uploading them back to polygon.
+* Automatic merging with conflicts.
  
 ## Installation 
 
@@ -22,7 +22,7 @@ Command-line tool for polygon
 3. Run `python3 setup.py install`
   * On Linux, it will put executable polygon-cli in /usr/local/bin
   * On Windows, it will put execuable polygon-cli in Scripts directory of your Python3 installtion. It should be added to path variable for more simple usage
-4. If somehow it can't be run because of some modules not installed, run
+4. Even if it doesn't run, install the dependencies manually as below,
   * `pip3 install requests` 
   * `pip3 install colorama` 
   * `pip3 install prettytable` 
