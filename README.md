@@ -1,5 +1,5 @@
 # polygon-cli
-Command-line tool for polygon
+Command-line tool for [polygon](https://polygon.codeforces.com/)
 
 ##Requirments
 
