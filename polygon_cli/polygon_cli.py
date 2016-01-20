@@ -297,13 +297,21 @@ def print_help():
     print("""
 polygon-cli Tool for using polygon from commandline
 Supported commands:
-    init <problemId>\tInitialize tool for problem <problemId>
-    relogin\t\tCreate new polygon http session for same problem
-    update\t\tDownload all files from polygon working copy, and merge with local copy
-    commit\t\tPut all local changes to polygon. NOT COMMITING YET!!!!
-    add <type> <files>\tUpload files as <type>. <type> can be 'solution', 'source', 'validator' or 'checker'
-    list\t\tList files in polygon
-    diff\t\tPrints diff of local and polygon version of file
+    init <problemId>
+    \t\tInitialize tool for problem <problemId>
+    relogin
+    \t\tCreate new polygon http session for same problem
+    update
+    \t\tDownload all files from polygon working copy, and merge with local copy
+    commit
+    \t\tPut all local changes to polygon. NOT COMMITING YET!!!!
+    add <type> [-t <solution_type>] <files>
+    \t\tUpload files as <type>. <type> can be 'solution', 'source', 'validator' or 'checker'
+    \t\t<solution_type> can be 'MA' (for main), 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE'
+    list
+    \t\tList files in polygon
+    diff
+    \t\tPrints diff of local and polygon version of file
 """)
     exit(1)
 
