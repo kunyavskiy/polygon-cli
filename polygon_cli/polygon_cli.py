@@ -154,8 +154,16 @@ def process_add(args):
         else:
             as_validator = True
         args[0] = 'source'
-    if (solution_type is not None) and (args[0] != 'solution'):
-        fatal('solution type can be set only on solutions')
+    if solution_type is not None:
+        if args[0] != 'solution':
+            fatal('solution type can be set only on solutions')
+        valid_solution_types = ['MA', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE']
+        solution_type = solution_type.upper()
+        solution_type_alias = {x: x for x in valid_solution_types}
+        solution_type_alias.update({'MAIN': 'MA'})
+        if solution_type not in solution_type_alias:
+            fatal('solution type should be in ' + str(sorted(list(solution_type_alias.keys()))))
+        solution_type = solution_type_alias[solution_type]
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for filename in args[1:]:
         local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
@@ -176,12 +184,7 @@ def process_add(args):
                 if as_validator:
                     global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
                 if solution_type is not None:
-                    valid_solution_types = ['MA', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE']
-                    if solution_type.upper() in valid_solution_types:
-                        global_vars.problem.change_solution_type(local.polygon_filename, solution_type.upper())
-                    else:
-                        status = colors.warning('Uploaded')
-                        print('solytion type should be in ' + str(valid_solution_types))
+                    global_vars.problem.change_solution_type(local.polygon_filename, solution_type.upper())
             else:
                 status = colors.error('Error')
         table.add_row([local.type, local.polygon_filename, local.filename, status])
