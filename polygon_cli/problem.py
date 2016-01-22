@@ -251,6 +251,23 @@ class ProblemSession:
         url = 'checker' if type == 'checker' else 'validation'
         self.send_request('POST', self.make_link(url), files=fields)
 
+    def change_solution_type(self, polygon_filename, type):
+        """
+        Changes type of solution
+
+        :type polygon_filename: str
+        :type type: str
+        """
+        fields = {
+            'action': ('', 'tagChangeType'),
+            'submitted': ('', 'true'),
+            'file': ('', polygon_filename),
+            'chosenType': ('', type),
+            'ccid': ('', self.ccid),
+            'session': ('', self.sessionId)
+        }
+        self.send_request('POST', self.make_link('solutions'), files=fields)
+
     def get_local_by_polygon(self, file):
         """
 

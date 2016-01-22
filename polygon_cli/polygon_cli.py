@@ -4,6 +4,7 @@ import os
 import sys
 from getpass import getpass
 from sys import argv
+import getopt
 
 from prettytable import PrettyTable
 
@@ -131,10 +132,20 @@ def process_add(args):
     if len(args) < 2:
         print_help()
     valid_types = ['solution', 'source', 'checker', 'validator']
+    try:
+        options, args = getopt.gnu_getopt(args, "t:")
+    except getopt.GetoptError as err:
+        fatal(err.msg)
     if args[0] not in valid_types:
         fatal('type should be in ' + str(valid_types))
     as_checker = False
     as_validator = False
+    solution_type = None
+    for opt in options:
+        if opt[0] == '-t':
+            solution_type = opt[1]
+        else:
+            pass # will be used with more options
     if args[0] == 'checker' or args[0] == 'validator':
         if len(args) != 2:
             fatal('can''t set several ' + args[0] + 's')
@@ -143,6 +154,8 @@ def process_add(args):
         else:
             as_validator = True
         args[0] = 'source'
+    if (solution_type is not None) and (args[0] != 'solution'):
+        fatal('solution type can be set only on solutions')
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for filename in args[1:]:
         local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
@@ -162,6 +175,13 @@ def process_add(args):
                     global_vars.problem.set_checker_validator(local.polygon_filename, 'checker')
                 if as_validator:
                     global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
+                if solution_type is not None:
+                    valid_solution_types = ['MA', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE']
+                    if solution_type.upper() in valid_solution_types:
+                        global_vars.problem.change_solution_type(local.polygon_filename, solution_type.upper())
+                    else:
+                        status = colors.warning('Uploaded')
+                        print('solytion type should be in ' + str(valid_solution_types))
             else:
                 status = colors.error('Error')
         table.add_row([local.type, local.polygon_filename, local.filename, status])
@@ -277,13 +297,21 @@ def print_help():
     print("""
 polygon-cli Tool for using polygon from commandline
 Supported commands:
-    init <problemId>\tInitialize tool for problem <problemId>
-    relogin\t\tCreate new polygon http session for same problem
-    update\t\tDownload all files from polygon working copy, and merge with local copy
-    commit\t\tPut all local changes to polygon. NOT COMMITING YET!!!!
-    add <type> <files>\tUpload files as <type>. <type> can be 'solution', 'source', 'validator' or 'checker'
-    list\t\tList files in polygon
-    diff\t\tPrints diff of local and polygon version of file
+    init <problemId>
+    \t\tInitialize tool for problem <problemId>
+    relogin
+    \t\tCreate new polygon http session for same problem
+    update
+    \t\tDownload all files from polygon working copy, and merge with local copy
+    commit
+    \t\tPut all local changes to polygon. NOT COMMITING YET!!!!
+    add <type> [-t <solution_type>] <files>
+    \t\tUpload files as <type>. <type> can be 'solution', 'source', 'validator' or 'checker'
+    \t\t<solution_type> can be 'MA' (for main), 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE'
+    list
+    \t\tList files in polygon
+    diff
+    \t\tPrints diff of local and polygon version of file
 """)
     exit(1)
 
