@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+import argparse
 import json
 import os
 import sys
 from getpass import getpass
 from sys import argv
-import getopt
 
 from prettytable import PrettyTable
 
@@ -46,12 +46,7 @@ def save_session():
     utils.safe_rewrite_file(config.get_session_file_path(), session_data_json)
 
 
-def process_init(args):
-    problem_id = None
-    try:
-        problem_id = int(args[0])
-    except:
-        print_help()
+def process_init(problem_id):
     if config.login:
         print('Using login %s from config' % config.login)
     else:
@@ -67,34 +62,30 @@ def process_init(args):
     save_session()
 
 
-def process_relogin(args):
-    if len(args) != 0:
-        print_help()
+def process_relogin():
     if not load_session() or global_vars.problem.problem_id is None:
         fatal('No problemId known. Use init instead.')
     local_files = global_vars.problem.local_files
-    process_init([global_vars.problem.problem_id])
+    process_init(global_vars.problem.problem_id)
     global_vars.problem.local_files = local_files
     save_session()
 
 
-def process_update(args):
+def process_update(flat, to_update):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
-    flat = False
-    if args and args[0] == '--flat':  # TODO: getopt or something like it
-        flat = True
-        args = args[1:]
     for file in files:
         if file.type == 'resource':
             continue
         local_file = global_vars.problem.get_local_by_polygon(file)
-        need_file = file.name in args or \
+        need_file = file.name in to_update or \
                     local_file is not None and \
-                    (local_file.name in args or local_file.filename in args or local_file.get_path() in args)
-        if args and not need_file:
+                    (local_file.name in to_update or
+                     local_file.filename in to_update or
+                     local_file.get_path() in to_update)
+        if to_update and not need_file:
             continue
         if local_file is not None:
             print('Updating local file %s from %s' % (local_file.name, file.name))
@@ -126,46 +117,26 @@ def process_update(args):
     save_session()
 
 
-def process_add(args):
+def process_add(file_type, solution_type, files):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
-    if len(args) < 2:
-        print_help()
-    valid_types = ['solution', 'source', 'checker', 'validator']
-    try:
-        options, args = getopt.gnu_getopt(args, "t:")
-    except getopt.GetoptError as err:
-        fatal(err.msg)
-    if args[0] not in valid_types:
-        fatal('type should be in ' + str(valid_types))
     as_checker = False
     as_validator = False
-    solution_type = None
-    for opt in options:
-        if opt[0] == '-t':
-            solution_type = opt[1]
-        else:
-            pass # will be used with more options
-    if args[0] == 'checker' or args[0] == 'validator':
-        if len(args) != 2:
-            fatal('can''t set several ' + args[0] + 's')
-        if args[0] == 'checker':
+    if file_type == 'checker' or file_type == 'validator':
+        if len(files) != 1:
+            fatal('can''t set several ' + file_type + 's')
+        if file_type == 'checker':
             as_checker = True
         else:
             as_validator = True
-        args[0] = 'source'
+        file_type = 'source'
     if solution_type is not None:
-        if args[0] != 'solution':
+        if file_type != 'solution':
             fatal('solution type can be set only on solutions')
-        valid_solution_types = ['MA', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE']
-        solution_type = solution_type.upper()
-        solution_type_alias = {x: x for x in valid_solution_types}
-        solution_type_alias.update({'MAIN': 'MA'})
-        if solution_type not in solution_type_alias:
-            fatal('solution type should be in ' + str(sorted(list(solution_type_alias.keys()))))
-        solution_type = solution_type_alias[solution_type]
+        if solution_type == 'MAIN':
+            solution_type = 'MA'
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
-    for filename in args[1:]:
+    for filename in files:
         local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
         if local is not None:
             print('file %s already added, use commit instead' % os.path.basename(filename))
@@ -174,7 +145,7 @@ def process_add(args):
             local = LocalFile(os.path.basename(filename),
                               os.path.dirname(filename),
                               str(os.path.basename(filename).split('.')[0]),
-                              args[0]
+                              file_type
                               )
             if local.upload():
                 status = colors.success('Uploaded')
@@ -192,7 +163,7 @@ def process_add(args):
     save_session()
 
 
-def process_commit(args):
+def process_commit(to_commit):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.local_files
@@ -204,11 +175,11 @@ def process_commit(args):
             for p in polygon_files:
                 if p.name == file.polygon_filename:
                     polygon_file = p
-        need_file = (polygon_file is not None and polygon_file.name in args) or \
-                    file.name in args or \
-                    file.filename in args or \
-                    file.get_path() in args
-        if args and not need_file:
+        need_file = (polygon_file is not None and polygon_file.name in to_commit) or \
+                    file.name in to_commit or \
+                    file.filename in to_commit or \
+                    file.get_path() in to_commit
+        if to_commit and not need_file:
             continue
         if polygon_file is None:
             file.polygon_filename = None
@@ -252,7 +223,7 @@ def process_commit(args):
     save_session()
 
 
-def process_list(args):
+def process_list():
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.get_all_files_list()
@@ -274,14 +245,12 @@ def process_list(args):
     save_session()
 
 
-def process_diff(args):
+def process_diff(filename):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
-    if len(args) != 1:
-        fatal('Exactly one file should be given to diff')
-    file = global_vars.problem.get_local_by_filename(args[0])
+    file = global_vars.problem.get_local_by_filename(filename)
     if file is None:
-        fatal('File %s not found' % args[0])
+        fatal('File %s not found' % filename)
     polygon_files = global_vars.problem.get_all_files_list()
     polygon_file = None
     if file.polygon_filename:
@@ -296,49 +265,71 @@ def process_diff(args):
     save_session()
 
 
-def print_help():
-    print("""
-polygon-cli Tool for using polygon from commandline
-Supported commands:
-    init <problemId>
-    \t\tInitialize tool for problem <problemId>
-    relogin
-    \t\tCreate new polygon http session for same problem
-    update
-    \t\tDownload all files from polygon working copy, and merge with local copy
-    commit
-    \t\tPut all local changes to polygon. NOT COMMITING YET!!!!
-    add <type> [-t <solution_type>] <files>
-    \t\tUpload files as <type>. <type> can be 'solution', 'source', 'validator' or 'checker'
-    \t\t<solution_type> can be 'MA' (for main), 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE'
-    list
-    \t\tList files in polygon
-    diff
-    \t\tPrints diff of local and polygon version of file
-""")
-    exit(1)
+parser = argparse.ArgumentParser(prog="polygon-cli")
+subparsers = parser.add_subparsers(
+        title='available subcommands',
+        description='',
+        help='DESCRIPTION',
+        metavar="SUBCOMMAND"
+)
+
+parser_init = subparsers.add_parser(
+        'init',
+        help="Initialize tool"
+)
+parser_init.add_argument('problem_id', help='Problem id to work with')
+parser_init.set_defaults(func=lambda options: process_init(options.problem_id))
+
+parser_relogin = subparsers.add_parser(
+        'relogin',
+        help="Create new polygon http session for same problem"
+)
+parser_relogin.set_defaults(func=lambda options: process_relogin())
+
+parser_update = subparsers.add_parser(
+        'update',
+        help="Download files from polygon working copy, and merge with local copy"
+)
+parser_update.add_argument('--flat', action='store_true', help='Load files in current folder, not solutions/src')
+parser_update.add_argument('file', nargs='*', help='List of files to download (all by default)')
+parser_update.set_defaults(func=lambda options: process_update(options.flat, options.file))
+
+parser_add = subparsers.add_parser(
+        'add',
+        help="Upload files to polygon"
+)
+parser_add.add_argument('file_type', choices=['solution', 'source', 'checker', 'validator'], help='Type of file to add')
+parser_add.add_argument('-t', dest='solution_type', choices=['MAIN', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE'],
+                        help='Solution type')
+parser_add.add_argument('file', nargs='+', help='List of files to add')
+parser_add.set_defaults(func=lambda options: process_add(options.file_type, options.solution_type, options.file))
+
+parser_commit = subparsers.add_parser(
+        'commit',
+        help="Put all local changes to polygon. Not making a commit in polygon"
+)
+parser_commit.add_argument('file', nargs='+', help='List of files to commit')
+parser_commit.set_defaults(func=lambda options: process_commit(options.file))
+
+parser_list = subparsers.add_parser(
+        'list',
+        help="List files in polygon"
+)
+parser_list.set_defaults(func=lambda options: process_list())
+
+parser_diff = subparsers.add_parser(
+        'diff',
+        help="Prints diff of local and polygon version of file"
+)
+parser_diff.add_argument('file', help='File to make diff')
+parser_diff.set_defaults(func=lambda options: process_diff(options.file))
 
 
 def main():
     try:
-        if len(argv) < 2:
-            print_help()
-        elif argv[1] == 'init':
-            process_init(argv[2:])
-        elif argv[1] == 'relogin':
-            process_relogin(argv[2:])
-        elif argv[1] == 'update':
-            process_update(argv[2:])
-        elif argv[1] == 'add':
-            process_add(argv[2:])
-        elif argv[1] == 'commit':
-            process_commit(argv[2:])
-        elif argv[1] == 'list':
-            process_list(argv[2:])
-        elif argv[1] == 'diff':
-            process_diff(argv[2:])
-        else:
-            print_help()
+        options = parser.parse_args(argv[1:])
+        print(options)
+        options.func(options)
     except PolygonNotLoginnedError:
         print('Can not login to polygon. Use relogin to update session')
 
