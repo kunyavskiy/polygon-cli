@@ -55,8 +55,7 @@ def safe_update_file(old_path, new_path, content):
 
 def diff_file_with_content(old_path, new_path, content):
     open(old_path + '.new', 'w').write(content)
-    return_value = diff_files(old_path, new_path, old_path + '.new')
-    return return_value
+    diff_files(old_path, new_path, old_path + '.new')
 
 
 def prepare_url_print(url):
