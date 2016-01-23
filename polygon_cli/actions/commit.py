@@ -69,5 +69,5 @@ def add_parser(subparsers):
             'commit',
             help="Put all local changes to polygon. Not making a commit in polygon"
     )
-    parser_commit.add_argument('file', nargs='+', help='List of files to commit')
+    parser_commit.add_argument('file', nargs='*', help='List of files to commit')
     parser_commit.set_defaults(func=lambda options: process_commit(options.file))
