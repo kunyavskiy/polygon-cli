@@ -52,6 +52,12 @@ class LocalFile:
         elif self.type == 'source':
             prefix = 'source'
             url = 'files'
+        elif self.type == 'resource':
+            prefix = 'resource'
+            url = 'files'
+        elif self.type == 'attachment':
+            prefix = 'attachment'
+            url = 'files'
         else:
             raise NotImplementedError("uploading solution of type " + self.type)
         if not global_vars.problem.upload_file(self.filename, prefix, url, content):
