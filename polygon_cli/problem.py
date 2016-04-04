@@ -330,7 +330,6 @@ class ProblemSession:
         }
         r = self.send_request('POST', url, files=fields)
         parser = FindUploadScriptErrorParser()
-        open("output.html",'w').write(r.text)
         parser.feed(r.text)
         if parser.error:
             print('Received error:')

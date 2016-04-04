@@ -14,10 +14,10 @@ from .exceptions import PolygonNotLoginnedError
 
 parser = argparse.ArgumentParser(prog="polygon-cli")
 subparsers = parser.add_subparsers(
-        title='available subcommands',
-        description='',
-        help='DESCRIPTION',
-        metavar="SUBCOMMAND",
+    title='available subcommands',
+    description='',
+    help='DESCRIPTION',
+    metavar="SUBCOMMAND",
 )
 
 subparsers.required = True

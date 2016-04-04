@@ -187,6 +187,7 @@ class FindUploadErrorParser(HTMLParser):
         if self.inError:
             self.error += chr(name2codepoint[name])
 
+
 class FindScriptParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -210,6 +211,7 @@ class FindScriptParser(HTMLParser):
     def handle_entityref(self, name):
         if self.inTextArea:
             self.script += chr(name2codepoint[name])
+
 
 class FindUploadScriptErrorParser(HTMLParser):
     def __init__(self):
