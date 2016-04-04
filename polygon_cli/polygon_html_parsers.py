@@ -186,3 +186,27 @@ class FindUploadErrorParser(HTMLParser):
     def handle_entityref(self, name):
         if self.inError:
             self.error += chr(name2codepoint[name])
+
+class FindScriptParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.inTextArea = False
+        self.script = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'textarea' and len(attrs) >= 1 and attrs[0][0] == 'id' and attrs[0][1].startswith('script'):
+            self.inTextArea = True
+            self.script = ''
+            return
+
+    def handle_endtag(self, tag):
+        if tag == 'textarea':
+            self.inTextArea = False
+
+    def handle_data(self, data):
+        if self.inTextArea and data.strip():
+            self.script += data
+
+    def handle_entityref(self, name):
+        if self.inTextArea:
+            self.script += chr(name2codepoint[name])

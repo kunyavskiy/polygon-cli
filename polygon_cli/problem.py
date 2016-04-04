@@ -168,6 +168,10 @@ class ProblemSession:
         files = parser.files
         for i in range(len(files)):
             files[i].normalize(self)
+        script = PolygonFile()
+        script.type = 'script'
+        script.name = 'script'
+        files.append(script)
         return files
 
     def get_all_files_list(self):
@@ -302,3 +306,10 @@ class ProblemSession:
         answer_url = self.make_link('plain-answer/answer-%s.txt?testset=tests&index=%s' % (test_num, test_num), ccid=True, ssid=True)
         answer = self.send_request('GET', answer_url).text
         utils.safe_rewrite_file('%03d.a' % int(test_num), answer, 'w')
+
+    def load_script(self):
+        test_url = self.make_link('tests', ccid=True, ssid=True)
+        tests = self.send_request('GET', test_url)
+        parser = FindScriptParser()
+        parser.feed(tests.text)
+        return parser.script

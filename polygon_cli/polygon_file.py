@@ -36,7 +36,10 @@ class PolygonFile:
 
         :rtype: str
         """
-        file_text = global_vars.problem.send_request('GET', self.download_link).text
+        if self.type == 'script':
+            file_text = global_vars.problem.load_script()
+        else:
+            file_text = global_vars.problem.send_request('GET', self.download_link).text
         return file_text
 
     def get_default_local_dir(self):
@@ -48,4 +51,6 @@ class PolygonFile:
             return 'src'
         if self.type == 'attachment':
             return 'src'
+        if self.type == 'script':
+            return ''
         raise NotImplementedError("loading files of type %s" % self.type)
