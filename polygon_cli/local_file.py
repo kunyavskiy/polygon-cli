@@ -46,6 +46,7 @@ class LocalFile:
     def upload(self):
         assert self.polygon_filename is None
         content = open(self.get_path(), 'r').read()
+        prefix = url = ''
         if self.type == 'solution':
             prefix = 'solutions'
             url = 'solutions'
@@ -58,9 +59,12 @@ class LocalFile:
         elif self.type == 'attachment':
             prefix = 'attachment'
             url = 'files'
-        else:
+        elif self.type != 'script':
             raise NotImplementedError("uploading solution of type " + self.type)
-        if not global_vars.problem.upload_file(self.filename, prefix, url, content):
+        if self.type == 'script':
+            if not global_vars.problem.upload_script(content):
+                return False
+        elif not global_vars.problem.upload_file(self.filename, prefix, url, content):
             return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
         self.polygon_filename = self.filename
@@ -69,7 +73,10 @@ class LocalFile:
     def update(self):
         assert self.polygon_filename is not None
         content = open(self.get_path(), 'r').read()
-        if not global_vars.problem.edit_file(self.filename, self.type, content):
+        if self.type == 'script':
+            if not global_vars.problem.upload_script(content):
+                return False
+        elif not global_vars.problem.edit_file(self.filename, self.type, content):
             return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
         return True

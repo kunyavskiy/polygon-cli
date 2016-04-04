@@ -210,3 +210,29 @@ class FindScriptParser(HTMLParser):
     def handle_entityref(self, name):
         if self.inTextArea:
             self.script += chr(name2codepoint[name])
+
+class FindUploadScriptErrorParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.error = None
+        self.inError = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'div' and len(attrs) == 1 and attrs[0][0] == 'class' and attrs[0][1] == 'field-error':
+            self.inError = True
+            self.error = ''
+            return
+        if tag == 'br' and self.inError:
+            self.error += '\n'
+
+    def handle_endtag(self, tag):
+        if tag == 'div':
+            self.inError = False
+
+    def handle_data(self, data):
+        if self.inError and data.strip():
+            self.error += data
+
+    def handle_entityref(self, name):
+        if self.inError:
+            self.error += chr(name2codepoint[name])

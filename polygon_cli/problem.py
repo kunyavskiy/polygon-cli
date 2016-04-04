@@ -313,3 +313,27 @@ class ProblemSession:
         parser = FindScriptParser()
         parser.feed(tests.text)
         return parser.script
+
+    def upload_script(self, content):
+        """
+        Uploads script solution to polygon
+
+        :type content: str
+        """
+        url = self.make_link('tests?action=saveScript&testset=tests', ssid=False, ccid=False)
+        fields = {
+            'submitted': 'true',
+            'script': content,
+            'ccid': self.ccid,
+            'session': self.sessionId,
+            'Save': 'Save Script'
+        }
+        r = self.send_request('POST', url, files=fields)
+        parser = FindUploadScriptErrorParser()
+        open("output.html",'w').write(r.text)
+        parser.feed(r.text)
+        if parser.error:
+            print('Received error:')
+            print(parser.error)
+            return False
+        return True
