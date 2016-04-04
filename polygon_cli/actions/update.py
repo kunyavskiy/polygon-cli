@@ -11,8 +11,8 @@ def process_update(flat, to_update):
     files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for file in files:
-        if file.type == 'resource':
-            continue
+        #if file.type == 'resource':
+        #    continue
         local_file = global_vars.problem.get_local_by_polygon(file)
         need_file = file.name in to_update or \
                     local_file is not None and \

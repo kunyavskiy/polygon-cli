@@ -44,6 +44,8 @@ class PolygonFile:
             return 'solutions'
         if self.type == 'source':
             return 'src'
+        if self.type == 'resource':
+            return 'src'
         if self.type == 'attachment':
             return 'src'
         raise NotImplementedError("loading files of type %s" % self.type)
