@@ -90,7 +90,7 @@ def parse_script_groups(content, hand_tests):
                     test_id += 1
             else:
                 test_id = int(t)
-                assert not test_id in hand_tests
+                assert test_id not in hand_tests
             groups[cur_group].append(test_id)
             continue
         cur_group = match.groups(0)[0]

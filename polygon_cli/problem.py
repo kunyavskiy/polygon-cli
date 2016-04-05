@@ -351,7 +351,7 @@ class ProblemSession:
             'action': 'setMultipleTestGroup',
             'session': self.sessionId,
             'testset': 'tests',
-            'requestString': '&'.join(map(lambda x : 'testIndex=' + str(x), tests)),
+            'requestString': '&'.join(map(lambda x: 'testIndex=' + str(x), tests)),
             'groupName': group,
             'ccid': self.ccid
         }
