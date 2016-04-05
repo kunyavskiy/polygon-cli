@@ -314,6 +314,14 @@ class ProblemSession:
         parser.feed(tests.text)
         return parser.script
 
+    def update_groups(self, script_content):
+        hand_tests = self.get_hand_tests_list()
+        groups = utils.parse_script_groups(script_content, hand_tests)
+        if groups:
+            for i in groups.keys():
+                self.set_test_group(groups[i], i)
+        return True
+
     def upload_script(self, content):
         """
         Uploads script solution to polygon
@@ -335,4 +343,24 @@ class ProblemSession:
             print('Received error:')
             print(parser.error)
             return False
-        return True
+        return self.update_groups(content)
+
+    def set_test_group(self, tests, group):
+        url = self.make_link('data/tests', ssid=False, ccid=False)
+        fields = {
+            'action': 'setMultipleTestGroup',
+            'session': self.sessionId,
+            'testset': 'tests',
+            'requestString': '&'.join(map(lambda x : 'testIndex=' + str(x), tests)),
+            'groupName': group,
+            'ccid': self.ccid
+        }
+
+        r = self.send_request('POST', url, files=fields)
+
+    def get_hand_tests_list(self):
+        test_url = self.make_link('tests', ccid=True, ssid=True)
+        tests = self.send_request('GET', test_url)
+        parser = FindHandTestsParser()
+        parser.feed(tests.text)
+        return parser.tests

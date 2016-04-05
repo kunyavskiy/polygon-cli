@@ -2,6 +2,7 @@
 import argparse
 from sys import argv
 
+from . import utils
 from .actions import add as add_action
 from .actions import commit as commit_action
 from .actions import diff as diff_action

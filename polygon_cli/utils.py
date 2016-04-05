@@ -3,6 +3,7 @@
 import os
 import shutil
 import sys
+import re
 from subprocess import Popen, PIPE
 
 from . import config
@@ -72,3 +73,29 @@ def prepare_url_print(url):
 
 def get_local_solutions():
     return os.listdir(config.solutions_path)
+
+
+def parse_script_groups(content, hand_tests):
+    groups = {"0": []}
+    cur_group = "0"
+    test_id = 0
+    any = False
+    for i in filter(None, content.splitlines()):
+        match = re.search(r"<#-- *group *(\d)* *-->", i)
+        if not match:
+            t = i.split('>')[-1].strip()
+            if t == '$':
+                test_id += 1
+                while test_id in hand_tests:
+                    test_id += 1
+            else:
+                test_id = int(t)
+                assert not test_id in hand_tests
+            groups[cur_group].append(test_id)
+            continue
+        cur_group = match.groups(0)[0]
+        groups[cur_group] = []
+        any = True
+    if not any:
+        return None
+    return groups

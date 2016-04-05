@@ -238,3 +238,14 @@ class FindUploadScriptErrorParser(HTMLParser):
     def handle_entityref(self, name):
         if self.inError:
             self.error += chr(name2codepoint[name])
+
+
+class FindHandTestsParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.tests = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "pre":
+            if len(attrs) == 2 and attrs[0][0] == 'id' and attrs[0][1].startswith('text'):
+                self.tests.append(int(attrs[0][1][4:]))
