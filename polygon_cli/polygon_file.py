@@ -39,7 +39,7 @@ class PolygonFile:
         if self.type == 'script':
             file_text = global_vars.problem.load_script()
         else:
-            file_text = global_vars.problem.send_request('GET', self.download_link).text
+            file_text = global_vars.problem.send_request('GET', self.download_link).content
         return file_text
 
     def get_default_local_dir(self):
