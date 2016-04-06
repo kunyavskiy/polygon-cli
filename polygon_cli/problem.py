@@ -312,7 +312,7 @@ class ProblemSession:
         tests = self.send_request('GET', test_url)
         parser = FindScriptParser()
         parser.feed(tests.text)
-        return parser.script
+        return str.encode(parser.script)
 
     def update_groups(self, script_content):
         hand_tests = self.get_hand_tests_list()

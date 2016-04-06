@@ -41,8 +41,8 @@ def process_update(flat, to_update):
             local_file.polygon_filename = file.name
             print('Downloading new file %s to %s' % (file.name, local_file.get_path()))
             content = file.get_content()
-            utils.safe_rewrite_file(local_file.get_path(), content)
-            utils.safe_rewrite_file(local_file.get_internal_path(), content)
+            utils.safe_rewrite_file(local_file.get_path(), content, "wb")
+            utils.safe_rewrite_file(local_file.get_internal_path(), content, "wb")
             global_vars.problem.local_files.append(local_file)
         table.add_row([file.type, file.name, local_file.get_path(), status])
     print(table)
