@@ -41,6 +41,16 @@ class ProblemsPageParser(HTMLParser):
         if tag == 'tr':
             self.inCorrectRow = False
 
+class ContestPageParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.problems = {}
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'tr':
+            if len(attrs) >= 2 and attrs[0][0] == "problemid" and attrs[1][0] == 'problemname':
+                self.problems[attrs[1][1]] = attrs[0][1]
+
 
 class ExtractSessionParser(HTMLParser):
     def __init__(self):

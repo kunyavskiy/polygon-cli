@@ -14,7 +14,7 @@ class ProblemSession:
         """
 
         :type address: str
-        :type problem_id: int
+        :type problem_id: int or None
         """
         self.polygon_address = address
         self.problem_id = problem_id
@@ -364,3 +364,11 @@ class ProblemSession:
         parser = FindHandTestsParser()
         parser.feed(tests.text)
         return parser.tests
+
+    def get_contest_problems(self, contest_id):
+        assert(self.problem_id is None)
+        contest_url = self.make_link('contest?contestId=' + str(contest_id), ccid=True, ssid=False)
+        data = self.send_request('GET', contest_url).text
+        parser = ContestPageParser()
+        parser.feed(data)
+        return parser.problems
