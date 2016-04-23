@@ -1,13 +1,13 @@
 import sys
 from getpass import getpass
 
-import requests
 from prettytable import PrettyTable
 
 from .common import *
+from .. import colors
 from .. import config
 from .. import global_vars
-from .. import colors
+
 
 def get_login_password():
     if config.login:
@@ -20,6 +20,7 @@ def get_login_password():
         print('Using password from config')
     else:
         config.password = getpass('Enter password: ')
+
 
 def process_init(problem_id):
     get_login_password()

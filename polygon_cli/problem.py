@@ -300,10 +300,12 @@ class ProblemSession:
         :type test_num: str
         """
 
-        input_url = self.make_link('plain-input/input-%s.txt?testset=tests&index=%s' % (test_num, test_num), ccid=True, ssid=True)
+        input_url = self.make_link('plain-input/input-%s.txt?testset=tests&index=%s' % (test_num, test_num), ccid=True,
+                                   ssid=True)
         input = self.send_request('GET', input_url).text
         utils.safe_rewrite_file('%03d' % int(test_num), input, 'w')
-        answer_url = self.make_link('plain-answer/answer-%s.txt?testset=tests&index=%s' % (test_num, test_num), ccid=True, ssid=True)
+        answer_url = self.make_link('plain-answer/answer-%s.txt?testset=tests&index=%s' % (test_num, test_num),
+                                    ccid=True, ssid=True)
         answer = self.send_request('GET', answer_url).text
         utils.safe_rewrite_file('%03d.a' % int(test_num), answer, 'w')
 
@@ -366,7 +368,7 @@ class ProblemSession:
         return parser.tests
 
     def get_contest_problems(self, contest_id):
-        assert(self.problem_id is None)
+        assert (self.problem_id is None)
         contest_url = self.make_link('contest?contestId=' + str(contest_id), ccid=True, ssid=False)
         data = self.send_request('GET', contest_url).text
         parser = ContestPageParser()

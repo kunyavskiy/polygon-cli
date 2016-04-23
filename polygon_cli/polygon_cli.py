@@ -2,7 +2,6 @@
 import argparse
 from sys import argv
 
-from . import utils
 from .actions import add as add_action
 from .actions import commit as commit_action
 from .actions import diff as diff_action
@@ -15,10 +14,10 @@ from .exceptions import PolygonNotLoginnedError
 
 parser = argparse.ArgumentParser(prog="polygon-cli")
 subparsers = parser.add_subparsers(
-    title='available subcommands',
-    description='',
-    help='DESCRIPTION',
-    metavar="SUBCOMMAND",
+        title='available subcommands',
+        description='',
+        help='DESCRIPTION',
+        metavar="SUBCOMMAND",
 )
 
 subparsers.required = True

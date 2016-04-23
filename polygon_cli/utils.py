@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import os
+import re
 import shutil
 import sys
-import re
 from subprocess import Popen, PIPE
 
 from . import config

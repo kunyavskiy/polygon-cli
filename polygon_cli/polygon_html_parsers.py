@@ -41,6 +41,7 @@ class ProblemsPageParser(HTMLParser):
         if tag == 'tr':
             self.inCorrectRow = False
 
+
 class ContestPageParser(HTMLParser):
     def __init__(self):
         super().__init__()
