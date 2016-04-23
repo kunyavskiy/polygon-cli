@@ -52,14 +52,14 @@ def merge_files(old, our, theirs):
 
 
 def safe_update_file(old_path, new_path, content):
-    open(old_path + '.new', 'w').write(content)
+    open(old_path + '.new', 'wb').write(content)
     return_value = merge_files(old_path, new_path, old_path + '.new')
     shutil.move(old_path + '.new', old_path)
     return return_value
 
 
 def diff_file_with_content(old_path, new_path, content):
-    open(old_path + '.new', 'w').write(content)
+    open(old_path + '.new', 'wb').write(content)
     diff_files(old_path, new_path, old_path + '.new')
 
 
