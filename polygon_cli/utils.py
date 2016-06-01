@@ -109,3 +109,11 @@ def convert_to_bytes(x):
     if isinstance(x, bytes):
         return x
     return bytes(str(x), 'utf8')
+
+
+def get_api_file_type(type):
+    if type == 'source' or type == 'resource':
+        return type
+    if type == 'attachment':
+        return 'aux'
+    return None

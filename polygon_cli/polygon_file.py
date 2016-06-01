@@ -1,4 +1,5 @@
 from . import global_vars
+from . import utils
 
 
 class PolygonFile:
@@ -35,12 +36,16 @@ class PolygonFile:
     def get_content(self):
         """
 
-        :rtype: str
+        :rtype: bytes
         """
         if self.type == 'script':
             file_text = global_vars.problem.load_script()
+        elif self.type == 'solution':
+            file_text = global_vars.problem.send_api_request('problem.viewSolution', {'name': self.name}, False)
         else:
-            file_text = global_vars.problem.send_request('GET', self.download_link).content
+            file_text = global_vars.problem.send_api_request('problem.viewFile',
+                                                             {'name': self.name,
+                                                              'type': utils.get_api_file_type(self.type)}, False)
         return file_text
 
     def get_default_local_dir(self):
