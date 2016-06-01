@@ -102,11 +102,14 @@ class ProblemSession:
             raise PolygonNotLoginnedError()
         return result
 
-    def send_api_request(self, api_method, params, no_json=False):
+    def send_api_request(self, api_method, params, is_json=True, problem_data=True):
         print('Invoking ' + api_method, end=' ')
         sys.stdout.flush()
         params["apiKey"] = config.api_key
         params["time"] = int(time.time())
+        if problem_data:
+            params["owner"] = self.owner
+            params["problemName"] = self.problem_name
         signature_random = ''.join([chr(random.SystemRandom().randint(0, 25) + ord('a')) for _ in range(6)])
         signature_random = utils.convert_to_bytes(signature_random)
         param_list = [(utils.convert_to_bytes(key), utils.convert_to_bytes(params[key])) for key in params]
@@ -115,15 +118,18 @@ class ProblemSession:
         signature_string += b'?' + b'&'.join([i[0] + b'=' + i[1] for i in param_list])
         signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
-        result = self.session.request('POST', self.polygon_address + '/api/' + api_method, params=params)
+        url = self.polygon_address + '/api/' + api_method
+        result = self.session.request('POST', url, params=params)
         print(result.status_code)
-        if no_json:
+        if not is_json:
             return result.content
         result = json.loads(result.content.decode('utf8'))
         if result["status"] == "FAILED":
             print(result["comment"])
             raise PolygonApiError()
-        return result["result"]
+        if "result" in result:
+            return result["result"]
+        return None
 
     def login(self, login, password):
         """
@@ -274,24 +280,15 @@ class ProblemSession:
             return False
         return True
 
-    def set_checker_validator(self, polygon_filename, type):
+    def set_utility_file(self, polygon_filename, type):
         """
         Sets checker or validator
 
         :type polygon_filename: str
         :type type: str
         """
-        fields = {
-            'submitted': ('', 'true'),
-            'file_selected': ('', polygon_filename),
-            'file_added': ('', ''),
-            'file_type': ('', ''),
-            'Set checker': ('', 'Set ' + type),
-            'ccid': ('', self.ccid),
-            'session': ('', self.sessionId)
-        }
-        url = 'checker' if type == 'checker' else 'validation'
-        self.send_request('POST', self.make_link(url), files=fields)
+
+        self.send_api_request('problem.set' + type.title(), {type : polygon_filename})
 
     def change_solution_type(self, polygon_filename, type):
         """

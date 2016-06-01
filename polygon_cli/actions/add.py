@@ -8,15 +8,10 @@ from ..local_file import LocalFile
 def process_add(file_type, solution_type, files):
     if not load_session() or global_vars.problem.sessionId is None:
         fatal('No session known. Use relogin or init first.')
-    as_checker = False
-    as_validator = False
-    if file_type == 'checker' or file_type == 'validator':
+    real_file_type = file_type
+    if file_type in ['checker', 'validator', 'interactor']:
         if len(files) != 1:
             fatal('can''t set several ' + file_type + 's')
-        if file_type == 'checker':
-            as_checker = True
-        else:
-            as_validator = True
         file_type = 'source'
     if solution_type is not None:
         if file_type != 'solution':
@@ -38,10 +33,8 @@ def process_add(file_type, solution_type, files):
             if local.upload():
                 status = colors.success('Uploaded')
                 global_vars.problem.local_files.append(local)
-                if as_checker:
-                    global_vars.problem.set_checker_validator(local.polygon_filename, 'checker')
-                if as_validator:
-                    global_vars.problem.set_checker_validator(local.polygon_filename, 'validator')
+                if real_file_type != file_type:
+                    global_vars.problem.set_utility_file(local.polygon_filename, real_file_type)
                 if solution_type is not None:
                     global_vars.problem.change_solution_type(local.polygon_filename, solution_type.upper())
             else:
@@ -56,7 +49,7 @@ def add_parser(subparsers):
             'add',
             help="Upload files to polygon"
     )
-    parser_add.add_argument('file_type', choices=['solution', 'source', 'checker', 'validator'],
+    parser_add.add_argument('file_type', choices=['solution', 'source', 'checker', 'validator', 'interactor'],
                             help='Type of file to add')
     parser_add.add_argument('-t', dest='solution_type', choices=['MAIN', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE'],
                             help='Solution type')
