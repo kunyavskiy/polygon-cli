@@ -22,12 +22,18 @@ class ProblemsPageParser(HTMLParser):
         self.discardLink = None
         self.startLink = None
         self.inCorrectRow = False
+        self.tdId = 0
+        self.owner = ''
+        self.problemName = ''
         self.problemId = problem_id
 
     def handle_starttag(self, tag, attrs):
         if tag == 'tr':
             if len(attrs) > 1 and attrs[0][0] == "problemid" and attrs[0][1] == str(self.problemId):
                 self.inCorrectRow = True
+                self.tdId = 0
+        elif tag == 'td':
+            self.tdId += 1
         elif tag == 'a' and self.inCorrectRow:
             assert attrs[2][0] == 'class'
             if attrs[2][1].startswith('CONTINUE'):
@@ -40,6 +46,13 @@ class ProblemsPageParser(HTMLParser):
     def handle_endtag(self, tag):
         if tag == 'tr':
             self.inCorrectRow = False
+
+    def handle_data(self, data):
+        if self.inCorrectRow and self.tdId == 3:
+            self.problemName += data.strip()
+        if self.inCorrectRow and self.tdId == 4:
+            self.owner += data.strip()
+
 
 
 class ContestPageParser(HTMLParser):

@@ -10,6 +10,7 @@ class PolygonFile:
         self.remove_link = None
         self.download_link = None
         self.edit_link = None
+        self.apiFile = False
 
     def __repr__(self):
         return str(self.__dict__)

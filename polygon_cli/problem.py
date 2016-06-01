@@ -22,6 +22,8 @@ class ProblemSession:
         """
         self.polygon_address = address
         self.problem_id = problem_id
+        self.owner = None
+        self.problem_name = None
         self.session = requests.session()
         self.sessionId = None
         self.ccid = None
@@ -39,6 +41,8 @@ class ProblemSession:
         assert self.problem_id == data["problemId"]
         self.sessionId = data["sessionId"]
         self.local_files = data["localFiles"]
+        self.owner = data["owner"]
+        self.problem_name = data["problemName"]
 
     def dump_session(self):
         """
@@ -52,6 +56,8 @@ class ProblemSession:
         data["cookies"] = self.session.cookies.get_dict()
         data["ccid"] = self.ccid
         data["localFiles"] = self.local_files
+        data["problemName"] = self.problem_name
+        data["owner"] = self.owner
         return data
 
     def make_link(self, link, ccid=False, ssid=False):
@@ -151,7 +157,10 @@ class ProblemSession:
         parser.feed(problems_page)
         return {'continue': parser.continueLink,
                 'discard': parser.discardLink,
-                'start': parser.startLink}
+                'start': parser.startLink,
+                'owner': parser.owner,
+                'problem_name': parser.problemName
+                }
 
     def create_new_session(self, login, password):
         """
@@ -168,6 +177,8 @@ class ProblemSession:
         parser = ExtractSessionParser()
         parser.feed(problem_page)
         self.sessionId = parser.session
+        self.owner = links["owner"]
+        self.problem_name = links["problem_name"]
 
     def get_solutions_list(self):
         """
