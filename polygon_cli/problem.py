@@ -119,7 +119,7 @@ class ProblemSession:
         signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
         url = self.polygon_address + '/api/' + api_method
-        result = self.session.request('POST', url, params=params)
+        result = self.session.request('POST', url, data=params)
         print(result.status_code)
         if not is_json:
             return result.content
@@ -225,59 +225,39 @@ class ProblemSession:
         """
         return self.get_files_list() + self.get_solutions_list()
 
-    def upload_file(self, name, prefix, url, content):
+    def upload_file(self, name, type, content, is_new):
         """
         Uploads new solution to polygon
 
         :type name: str
-        :type prefix: str
-        :type url: str
-        :type content: str
+        :type type: str
+        :type content: bytes
+        :type is_new: bool
         :rtype: bool
         """
-        file_type = 'cpp.g++11' if name.endswith('.cpp') else ''
-        fields = {
-            prefix + '_file_type': ('', file_type),
-            'submitted': ('', 'true'),
-            prefix + '_file_added': (name, content),
-            'ccid': ('', self.ccid),
-            'session': ('', self.sessionId)
-        }
-        r = self.send_request('POST', self.make_link(url), files=fields)
-        parser = FindUploadErrorParser()
-        parser.feed(r.text)
-        if parser.error:
-            print('Received error:')
-            print(parser.error)
-            return False
-        return True
+        options = {}
+        if name.endswith('.cpp'):
+            options['sourceType'] = 'cpp.g++11'
+        else:
+            options['sourceType'] = ''
+        if is_new:
+            options['checkExisting'] = 'true'
+        else:
+            options['checkExisting'] = 'false'
+        options['name'] = name
+        if type == 'solution':
+            api_method = 'problem.saveSolution'
+            options['tag'] = 'WA' #TODO:FIXIT!
+        else:
+            api_method = 'problem.saveFile'
+            options['type'] = utils.get_api_file_type(type)
+            if not options['type']:
+                raise NotImplementedError("uploading file of type " + type)
 
-    def edit_file(self, name, file_type, content):
-        """
-        Edits existing solution in polygon
+        options['file'] = content
 
-        :type name: str
-        :type file_type: str
-        :type content: str
-        :rtype: bool
-        """
-        if file_type == 'solution':
-            file_type = 'solutions'  # because of edit link in polygon
-        fields = {
-            'type': file_type,
-            'file': name,
-            'submitted': 'true',
-            'content': content,
-            'ccid': self.ccid,
-            'session': self.sessionId
-        }
-        r = self.send_request('POST', self.make_link('modify'), data=fields)
-        parser = FindEditErrorParser()
-        parser.feed(r.text)
-        if parser.error:
-            print('Received error:')
-            print(parser.error)
-            return False
+        self.send_api_request(api_method, options)
+
         return True
 
     def set_utility_file(self, polygon_filename, type):
