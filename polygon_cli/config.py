@@ -3,6 +3,8 @@ import os
 polygon_url = "https://polygon.codeforces.com"
 login = None
 password = None
+api_key = None
+api_secret = None
 internal_directory_path = '.polygon-cli'
 solutions_path = 'solutions'
 sessionFile = 'session.json'

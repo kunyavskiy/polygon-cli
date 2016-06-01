@@ -103,3 +103,9 @@ def parse_script_groups(content, hand_tests):
     if not any:
         return None
     return groups
+
+
+def convert_to_bytes(x):
+    if isinstance(x, bytes):
+        return x
+    return bytes(str(x), 'utf8')

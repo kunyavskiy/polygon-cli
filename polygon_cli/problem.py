@@ -1,11 +1,15 @@
+import hashlib
+import json
+import random
 import sys
+import time
 
 import requests
 
 from . import config
 from . import polygon_file
 from . import utils
-from .exceptions import PolygonNotLoginnedError, ProblemNotFoundError
+from .exceptions import PolygonNotLoginnedError, ProblemNotFoundError, PolygonApiError
 from .polygon_html_parsers import *
 
 
@@ -91,6 +95,29 @@ class ProblemSession:
         if result.url and result.url.startswith(config.polygon_url + '/login'):
             raise PolygonNotLoginnedError()
         return result
+
+    def send_api_request(self, api_method, params, no_json=False):
+        print('Invoking ' + api_method, end=' ')
+        sys.stdout.flush()
+        params["apiKey"] = config.api_key
+        params["time"] = int(time.time())
+        signature_random = ''.join([chr(random.SystemRandom().randint(0, 25) + ord('a')) for _ in range(6)])
+        signature_random = utils.convert_to_bytes(signature_random)
+        param_list = [(utils.convert_to_bytes(key), utils.convert_to_bytes(params[key])) for key in params]
+        param_list.sort()
+        signature_string  = signature_random + b'/' + utils.convert_to_bytes(api_method)
+        signature_string += b'?' + b'&'.join([i[0] + b'=' + i[1] for i in param_list])
+        signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
+        params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
+        result = self.session.request('POST', self.polygon_address + '/api/' + api_method, params=params)
+        print(result.status_code)
+        if no_json:
+            return result.content
+        result = json.loads(result.content.decode('utf8'))
+        if result["status"] == "FAILED":
+            print(result["comment"])
+            raise PolygonApiError()
+        return result["result"]
 
     def login(self, login, password):
         """
