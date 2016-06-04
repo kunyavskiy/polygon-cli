@@ -45,23 +45,23 @@ class LocalFile:
 
     def upload(self):
         assert self.polygon_filename is None
-        content = open(self.get_path(), 'r').read()
+        file = open(self.get_path(), 'rb')
         if self.type == 'script':
-            if not global_vars.problem.upload_script(content):
+            if not global_vars.problem.upload_script(file):
                 return False
-        elif not global_vars.problem.upload_file(self.filename, self.type, content, True):
+        elif not global_vars.problem.upload_file(self.filename, self.type, file, True):
             return False
-        utils.safe_rewrite_file(self.get_internal_path(), content)
+        utils.safe_rewrite_file(self.get_internal_path(), file.read())
         self.polygon_filename = self.filename
         return True
 
     def update(self):
         assert self.polygon_filename is not None
-        content = open(self.get_path(), 'r').read()
+        file = open(self.get_path(), 'rb')
         if self.type == 'script':
-            if not global_vars.problem.upload_script(content):
+            if not global_vars.problem.upload_script(file):
                 return False
-        elif not global_vars.problem.upload_file(self.filename, self.type, content, False):
+        elif not global_vars.problem.upload_file(self.filename, self.type, file, False):
             return False
-        utils.safe_rewrite_file(self.get_internal_path(), content)
+        utils.safe_rewrite_file(self.get_internal_path(), file.read())
         return True

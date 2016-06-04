@@ -102,7 +102,7 @@ class ProblemSession:
             raise PolygonNotLoginnedError()
         return result
 
-    def send_api_request(self, api_method, params, is_json=True, problem_data=True):
+    def send_api_request(self, api_method, params, is_json=True, problem_data=True, files=None):
         print('Invoking ' + api_method, end=' ')
         sys.stdout.flush()
         params["apiKey"] = config.api_key
@@ -113,15 +113,26 @@ class ProblemSession:
         signature_random = ''.join([chr(random.SystemRandom().randint(0, 25) + ord('a')) for _ in range(6)])
         signature_random = utils.convert_to_bytes(signature_random)
         param_list = [(utils.convert_to_bytes(key), utils.convert_to_bytes(params[key])) for key in params]
+        if files:
+            for key in files:
+                param_list.append((utils.convert_to_bytes(key), files[key].read()))
+                files[key].seek(0)
+            param_list = [] #TODO: remove after fix in polygon
         param_list.sort()
-        signature_string  = signature_random + b'/' + utils.convert_to_bytes(api_method)
+        signature_string = signature_random + b'/' + utils.convert_to_bytes(api_method)
         signature_string += b'?' + b'&'.join([i[0] + b'=' + i[1] for i in param_list])
         signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
         url = self.polygon_address + '/api/' + api_method
-        result = self.session.request('POST', url, data=params)
+        if api_method == 'problem.saveFile':
+            print()
+            print(params)
+            print(files)
+            print(signature_string)
+
+        result = self.session.request('POST', url, data=params, files=files)
         print(result.status_code)
-        if not is_json:
+        if not is_json and result.status_code == 200:
             return result.content
         result = json.loads(result.content.decode('utf8'))
         if result["status"] == "FAILED":
@@ -238,8 +249,6 @@ class ProblemSession:
         options = {}
         if name.endswith('.cpp'):
             options['sourceType'] = 'cpp.g++11'
-        else:
-            options['sourceType'] = ''
         if is_new:
             options['checkExisting'] = 'true'
         else:
@@ -247,16 +256,18 @@ class ProblemSession:
         options['name'] = name
         if type == 'solution':
             api_method = 'problem.saveSolution'
-            options['tag'] = 'WA' #TODO:FIXIT!
+            options['tag'] = 'OK' #TODO:FIXIT!
         else:
             api_method = 'problem.saveFile'
             options['type'] = utils.get_api_file_type(type)
             if not options['type']:
                 raise NotImplementedError("uploading file of type " + type)
 
-        options['file'] = content
-
-        self.send_api_request(api_method, options)
+        try:
+            self.send_api_request(api_method, options, files={'file': content})
+        except PolygonApiError as e:
+            print(e)
+            return False
 
         return True
 
@@ -339,12 +350,13 @@ class ProblemSession:
                 self.set_test_group(groups[i], i)
         return True
 
-    def upload_script(self, content):
+    def upload_script(self, file):
         """
         Uploads script solution to polygon
 
         :type content: str
         """
+        content = file.read()
         url = self.make_link('tests?action=saveScript&testset=tests', ssid=False, ccid=False)
         fields = {
             'submitted': 'true',

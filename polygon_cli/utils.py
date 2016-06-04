@@ -20,12 +20,14 @@ def diff_files(old, our, theirs):
     Popen(config.get_diff_tool(old, our, theirs), stdout=sys.stdout, shell=True)
 
 
-def safe_rewrite_file(path, content, openmode='w'):
+def safe_rewrite_file(path, content, openmode='wb'):
     dir_name = os.path.dirname(path)
     if dir_name and not os.path.exists(dir_name):
         os.makedirs(dir_name)
     if os.path.exists(path):
         shutil.copy(path, path + ".$$$")
+        if openmode.endswith('b'):
+            content = convert_to_bytes(content)
         open(path, openmode).write(content)
         os.remove(path + '.$$$')
     else:
