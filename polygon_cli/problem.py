@@ -117,7 +117,7 @@ class ProblemSession:
             for key in files:
                 param_list.append((utils.convert_to_bytes(key), files[key].read()))
                 files[key].seek(0)
-            param_list = [] #TODO: remove after fix in polygon
+            param_list = []  # TODO: remove after fix in polygon
         param_list.sort()
         signature_string = signature_random + b'/' + utils.convert_to_bytes(api_method)
         signature_string += b'?' + b'&'.join([i[0] + b'=' + i[1] for i in param_list])
@@ -208,7 +208,7 @@ class ProblemSession:
         """
         files_raw = self.send_api_request('problem.files', {})
         files = []
-        types_map = {'sourceFiles' : 'source', 'resourceFiles' : 'resource', 'auxFiles' : 'attachment'}
+        types_map = {'sourceFiles': 'source', 'resourceFiles': 'resource', 'auxFiles': 'attachment'}
         for i in types_map:
             self.parse_api_file_list(files, files_raw[i], types_map[i])
 
@@ -254,7 +254,7 @@ class ProblemSession:
         options['name'] = name
         if type == 'solution':
             api_method = 'problem.saveSolution'
-            options['tag'] = 'OK' #TODO:FIXIT!
+            options['tag'] = 'OK'  # TODO:FIXIT!
         else:
             api_method = 'problem.saveFile'
             options['type'] = utils.get_api_file_type(type)
@@ -277,7 +277,7 @@ class ProblemSession:
         :type type: str
         """
 
-        self.send_api_request('problem.set' + type.title(), {type : polygon_filename})
+        self.send_api_request('problem.set' + type.title(), {type: polygon_filename})
 
     def change_solution_type(self, polygon_filename, type):
         """
@@ -352,7 +352,7 @@ class ProblemSession:
         """
         Uploads script solution to polygon
 
-        :type content: str
+        :type file: file
         """
         content = file.read()
         url = self.make_link('tests?action=saveScript&testset=tests', ssid=False, ccid=False)
@@ -383,7 +383,7 @@ class ProblemSession:
             'ccid': self.ccid
         }
 
-        r = self.send_request('POST', url, files=fields)
+        self.send_request('POST', url, files=fields)
 
     def get_hand_tests_list(self):
         test_url = self.make_link('tests', ccid=True, ssid=True)

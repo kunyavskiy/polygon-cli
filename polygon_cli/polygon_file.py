@@ -17,7 +17,6 @@ class PolygonFile:
             if key != '__type':
                 setattr(self, key, data[key])
 
-
     def get_content(self):
         """
 

@@ -54,7 +54,6 @@ class ProblemsPageParser(HTMLParser):
             self.owner += data.strip()
 
 
-
 class ContestPageParser(HTMLParser):
     def __init__(self):
         super().__init__()
