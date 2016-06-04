@@ -41,8 +41,13 @@ class ProblemSession:
         assert self.problem_id == data["problemId"]
         self.sessionId = data["sessionId"]
         self.local_files = data["localFiles"]
-        self.owner = data["owner"]
-        self.problem_name = data["problemName"]
+        if "version" not in data:
+            print('Your session file is too old, relogin required')
+            self.sessionId = None
+            self.ccid = None
+        else:
+            self.owner = data["owner"]
+            self.problem_name = data["problemName"]
 
     def dump_session(self):
         """
@@ -58,6 +63,7 @@ class ProblemSession:
         data["localFiles"] = self.local_files
         data["problemName"] = self.problem_name
         data["owner"] = self.owner
+        data["version"] = 1
         return data
 
     def make_link(self, link, ccid=False, ssid=False):
