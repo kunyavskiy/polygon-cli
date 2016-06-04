@@ -124,12 +124,6 @@ class ProblemSession:
         signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
         url = self.polygon_address + '/api/' + api_method
-        if api_method == 'problem.saveFile':
-            print()
-            print(params)
-            print(files)
-            print(signature_string)
-
         result = self.session.request('POST', url, data=params, files=files)
         print(result.status_code)
         if not is_json and result.status_code == 200:
@@ -202,13 +196,9 @@ class ProblemSession:
 
         :rtype: list of polygon_file.PolygonFile
         """
-        url = self.make_link('solutions', ccid=True, ssid=True)
-        solutions_page = self.send_request('GET', url)
-        parser = SolutionsPageParser()
-        parser.feed(solutions_page.text)
-        files = parser.files
-        for i in range(len(files)):
-            files[i].normalize(self)
+        solutions_raw = self.send_api_request('problem.solutions', {})
+        files = []
+        self.parse_api_file_list(files, solutions_raw, 'solution')
         return files
 
     def get_files_list(self):
@@ -216,18 +206,26 @@ class ProblemSession:
 
         :rtype: list of polygon_file.PolygonFile
         """
-        url = self.make_link('files', ccid=True, ssid=True)
-        solutions_page = self.send_request('GET', url)
-        parser = FilesPageParser()
-        parser.feed(solutions_page.text)
-        files = parser.files
-        for i in range(len(files)):
-            files[i].normalize(self)
+        files_raw = self.send_api_request('problem.files', {})
+        files = []
+        types_map = {'sourceFiles' : 'source', 'resourceFiles' : 'resource', 'auxFiles' : 'attachment'}
+        for i in types_map:
+            self.parse_api_file_list(files, files_raw[i], types_map[i])
+
         script = PolygonFile()
         script.type = 'script'
         script.name = 'script'
         files.append(script)
         return files
+
+    def parse_api_file_list(self, files, files_raw, type):
+        for j in files_raw:
+            polygon_file = PolygonFile()
+            polygon_file.type = type
+            polygon_file.name = j["name"]
+            polygon_file.date = j["modificationTimeSeconds"]
+            polygon_file.size = j["length"]
+            files.append(polygon_file)
 
     def get_all_files_list(self):
         """
