@@ -24,10 +24,10 @@ def safe_rewrite_file(path, content, openmode='wb'):
     dir_name = os.path.dirname(path)
     if dir_name and not os.path.exists(dir_name):
         os.makedirs(dir_name)
+    if openmode.endswith('b'):
+        content = convert_to_bytes(content)
     if os.path.exists(path):
         shutil.copy(path, path + ".$$$")
-        if openmode.endswith('b'):
-            content = convert_to_bytes(content)
         open(path, openmode).write(content)
         os.remove(path + '.$$$')
     else:
