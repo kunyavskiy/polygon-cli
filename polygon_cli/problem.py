@@ -108,7 +108,7 @@ class ProblemSession:
             raise PolygonNotLoginnedError()
         return result
 
-    def send_api_request(self, api_method, params, is_json=True, problem_data=True, files=None):
+    def send_api_request(self, api_method, params, is_json=True, problem_data=True):
         print('Invoking ' + api_method, end=' ')
         sys.stdout.flush()
         params["apiKey"] = config.api_key
@@ -119,18 +119,13 @@ class ProblemSession:
         signature_random = ''.join([chr(random.SystemRandom().randint(0, 25) + ord('a')) for _ in range(6)])
         signature_random = utils.convert_to_bytes(signature_random)
         param_list = [(utils.convert_to_bytes(key), utils.convert_to_bytes(params[key])) for key in params]
-        if files:
-            for key in files:
-                param_list.append((utils.convert_to_bytes(key), files[key].read()))
-                files[key].seek(0)
-            param_list = []  # TODO: remove after fix in polygon
         param_list.sort()
         signature_string = signature_random + b'/' + utils.convert_to_bytes(api_method)
         signature_string += b'?' + b'&'.join([i[0] + b'=' + i[1] for i in param_list])
         signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
         url = self.polygon_address + '/api/' + api_method
-        result = self.session.request('POST', url, data=params, files=files)
+        result = self.session.request('POST', url, data=params)
         print(result.status_code)
         if not is_json and result.status_code == 200:
             return result.content
@@ -240,7 +235,7 @@ class ProblemSession:
         """
         return self.get_files_list() + self.get_solutions_list()
 
-    def upload_file(self, name, type, content, is_new):
+    def upload_file(self, name, type, content, is_new, tag=None):
         """
         Uploads new solution to polygon
 
@@ -248,6 +243,7 @@ class ProblemSession:
         :type type: str
         :type content: bytes
         :type is_new: bool
+        :type tag: str or None
         :rtype: bool
         """
         options = {}
@@ -260,15 +256,17 @@ class ProblemSession:
         options['name'] = name
         if type == 'solution':
             api_method = 'problem.saveSolution'
-            options['tag'] = 'OK'  # TODO:FIXIT!
+            if tag:
+                options['tag'] = tag
         else:
             api_method = 'problem.saveFile'
             options['type'] = utils.get_api_file_type(type)
             if not options['type']:
                 raise NotImplementedError("uploading file of type " + type)
 
+        options['file'] = content
         try:
-            self.send_api_request(api_method, options, files={'file': content})
+            self.send_api_request(api_method, options)
         except PolygonApiError as e:
             print(e)
             return False
@@ -285,22 +283,6 @@ class ProblemSession:
 
         self.send_api_request('problem.set' + type.title(), {type: polygon_filename})
 
-    def change_solution_type(self, polygon_filename, type):
-        """
-        Changes type of solution
-
-        :type polygon_filename: str
-        :type type: str
-        """
-        fields = {
-            'action': ('', 'tagChangeType'),
-            'submitted': ('', 'true'),
-            'file': ('', polygon_filename),
-            'chosenType': ('', type),
-            'ccid': ('', self.ccid),
-            'session': ('', self.sessionId)
-        }
-        self.send_request('POST', self.make_link('solutions'), files=fields)
 
     def get_local_by_polygon(self, file):
         """
@@ -354,13 +336,12 @@ class ProblemSession:
                 self.set_test_group(groups[i], i)
         return True
 
-    def upload_script(self, file):
+    def upload_script(self, content):
         """
         Uploads script solution to polygon
 
-        :type file: file
+        :type content: bytes
         """
-        content = file.read()
         url = self.make_link('tests?action=saveScript&testset=tests', ssid=False, ccid=False)
         fields = {
             'submitted': 'true',

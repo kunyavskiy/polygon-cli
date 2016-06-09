@@ -30,13 +30,13 @@ def process_add(file_type, solution_type, files):
                               str(os.path.basename(filename).split('.')[0]),
                               file_type
                               )
+            if solution_type is not None:
+                local.tag = solution_type
             if local.upload():
                 status = colors.success('Uploaded')
                 global_vars.problem.local_files.append(local)
                 if real_file_type != file_type:
                     global_vars.problem.set_utility_file(local.polygon_filename, real_file_type)
-                if solution_type is not None:
-                    global_vars.problem.change_solution_type(local.polygon_filename, solution_type.upper())
             else:
                 status = colors.error('Error')
         table.add_row([local.type, local.polygon_filename, local.filename, status])

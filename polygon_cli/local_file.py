@@ -6,7 +6,7 @@ from . import utils
 
 
 class LocalFile:
-    def __init__(self, filename=None, dir=None, name=None, type=None, polygon_filename=None):
+    def __init__(self, filename=None, dir=None, name=None, type=None, polygon_filename=None, tag=None):
         """
 
         :type filename: str or None
@@ -14,12 +14,14 @@ class LocalFile:
         :type name: str or None
         :type type: str or None
         :type polygon_filename: str or None
+        :type tag: str or None
         """
         self.filename = filename
         self.dir = dir
         self.name = name
         self.type = type
         self.polygon_filename = polygon_filename
+        self.tag = tag
 
     def __repr__(self):
         return str(self.__dict__)
@@ -46,22 +48,24 @@ class LocalFile:
     def upload(self):
         assert self.polygon_filename is None
         file = open(self.get_path(), 'rb')
+        content = file.read()
         if self.type == 'script':
-            if not global_vars.problem.upload_script(file):
+            if not global_vars.problem.upload_script(content):
                 return False
-        elif not global_vars.problem.upload_file(self.filename, self.type, file, True):
+        elif not global_vars.problem.upload_file(self.filename, self.type, content, True):
             return False
-        utils.safe_rewrite_file(self.get_internal_path(), file.read())
+        utils.safe_rewrite_file(self.get_internal_path(), content)
         self.polygon_filename = self.filename
         return True
 
     def update(self):
         assert self.polygon_filename is not None
         file = open(self.get_path(), 'rb')
+        content = file.read()
         if self.type == 'script':
-            if not global_vars.problem.upload_script(file):
+            if not global_vars.problem.upload_script(content):
                 return False
-        elif not global_vars.problem.upload_file(self.filename, self.type, file, False):
+        elif not global_vars.problem.upload_file(self.filename, self.type, content, False):
             return False
-        utils.safe_rewrite_file(self.get_internal_path(), file.read())
+        utils.safe_rewrite_file(self.get_internal_path(), content)
         return True
