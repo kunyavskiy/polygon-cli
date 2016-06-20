@@ -345,24 +345,16 @@ class ProblemSession:
         return self.update_groups(content)
 
     def set_test_group(self, tests, group):
-        url = self.make_link('data/tests', ssid=False, ccid=False)
-        fields = {
-            'action': 'setMultipleTestGroup',
-            'session': self.sessionId,
-            'testset': 'tests',
-            'requestString': '&'.join(map(lambda x: 'testIndex=' + str(x), tests)),
-            'groupName': group,
-            'ccid': self.ccid
-        }
-
-        self.send_request('POST', url, files=fields)
+        for i in tests:
+            self.send_api_request('problem.saveTest', {'testset': 'tests', 'testIndex': i, 'testGroup' : group})
 
     def get_hand_tests_list(self):
-        test_url = self.make_link('tests', ccid=True, ssid=True)
-        tests = self.send_request('GET', test_url)
-        parser = FindHandTestsParser()
-        parser.feed(tests.text)
-        return parser.tests
+        tests = self.send_api_request('problem.tests', {'testset' : 'tests'})
+        result = []
+        for i in tests:
+            if i["manual"]:
+                result.append(int(i["index"]))
+        return result
 
     def get_contest_problems(self, contest_id):
         assert (self.problem_id is None)
