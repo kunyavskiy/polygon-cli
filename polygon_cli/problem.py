@@ -311,14 +311,14 @@ class ProblemSession:
         :type test_num: str
         """
 
-        input_url = self.make_link('plain-input/input-%s.txt?testset=tests&index=%s' % (test_num, test_num), ccid=True,
-                                   ssid=True)
-        input = self.send_request('GET', input_url).text
-        utils.safe_rewrite_file('%03d' % int(test_num), input, 'w')
+        input = self.send_api_request('problem.testInput',
+                                      {'testset': 'tests', 'testIndex': test_num},
+                                      is_json=False)
+        utils.safe_rewrite_file('%03d' % int(test_num), input)
         answer_url = self.make_link('plain-answer/answer-%s.txt?testset=tests&index=%s' % (test_num, test_num),
                                     ccid=True, ssid=True)
-        answer = self.send_request('GET', answer_url).text
-        utils.safe_rewrite_file('%03d.a' % int(test_num), answer, 'w')
+        answer = self.send_request('GET', answer_url).content
+        utils.safe_rewrite_file('%03d.a' % int(test_num), answer)
 
     def load_script(self):
         return self.send_api_request('problem.script', {'testset': 'tests'}, is_json=False)
