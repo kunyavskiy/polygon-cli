@@ -283,7 +283,6 @@ class ProblemSession:
 
         self.send_api_request('problem.set' + type.title(), {type: polygon_filename})
 
-
     def get_local_by_polygon(self, file):
         """
 
@@ -322,11 +321,7 @@ class ProblemSession:
         utils.safe_rewrite_file('%03d.a' % int(test_num), answer, 'w')
 
     def load_script(self):
-        test_url = self.make_link('tests', ccid=True, ssid=True)
-        tests = self.send_request('GET', test_url)
-        parser = FindScriptParser()
-        parser.feed(tests.text)
-        return str.encode(parser.script)
+        return self.send_api_request('problem.script', {'testset': 'tests'}, is_json=False)
 
     def update_groups(self, script_content):
         hand_tests = self.get_hand_tests_list()
@@ -342,20 +337,10 @@ class ProblemSession:
 
         :type content: bytes
         """
-        url = self.make_link('tests?action=saveScript&testset=tests', ssid=False, ccid=False)
-        fields = {
-            'submitted': 'true',
-            'script': content,
-            'ccid': self.ccid,
-            'session': self.sessionId,
-            'Save': 'Save Script'
-        }
-        r = self.send_request('POST', url, files=fields)
-        parser = FindUploadScriptErrorParser()
-        parser.feed(r.text)
-        if parser.error:
-            print('Received error:')
-            print(parser.error)
+        try:
+            self.send_api_request('problem.saveScript', {'testset': 'tests', 'source': content})
+        except PolygonApiError as e:
+            print(e)
             return False
         return self.update_groups(content)
 
