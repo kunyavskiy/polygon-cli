@@ -1,6 +1,9 @@
 import os
 
 polygon_url = "https://polygon.codeforces.com"
+# change this before installation
+# login and password will be used for non-api queries, you may leave them None
+# WARNING: this will be stored in plain-text on your computer in Python scripts directory
 login = None
 password = None
 api_key = None
