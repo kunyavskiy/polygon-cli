@@ -10,6 +10,26 @@ from .. import global_vars
 
 
 def process_init(problem_id):
+    if not problem_id.isdigit():
+        session = ProblemSession(config.polygon_url, None)
+        problems = session.send_api_request('problems.list', {}, problem_data=False)
+        list = []
+        for i in problems:
+            if i["name"] == problem_id:
+                list.append(i)
+        if len(list) == 0:
+            print('No problem %s found' % problem_id)
+            exit(0)
+        if len(list) == 1:
+            problem_id = list[0]["id"]
+            print('Detected problem id is %s' % problem_id)
+        if len(list) == 2:
+            print('Problem %s is ambigious, choose by id' % problem_id)
+            table = PrettyTable(['Id', 'Name', 'Owner', 'Access'])
+            for i in list:
+                table.add_row([i["id"], i["name"], i["owner"], i["accessType"]])
+            print(table)
+            exit(0)
     global_vars.problem = ProblemSession(config.polygon_url, problem_id)
     save_session()
 
