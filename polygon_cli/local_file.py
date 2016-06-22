@@ -52,7 +52,7 @@ class LocalFile:
         if self.type == 'script':
             if not global_vars.problem.upload_script(content):
                 return False
-        elif not global_vars.problem.upload_file(self.filename, self.type, content, True):
+        elif not global_vars.problem.upload_file(self.filename, self.type, content, True, self.tag):
             return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
         self.polygon_filename = self.filename
