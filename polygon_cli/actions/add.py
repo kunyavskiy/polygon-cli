@@ -6,7 +6,7 @@ from ..local_file import LocalFile
 
 
 def process_add(file_type, solution_type, files):
-    if not load_session() or global_vars.problem.sessionId is None:
+    if not load_session():
         fatal('No session known. Use relogin or init first.')
     real_file_type = file_type
     if file_type in ['checker', 'validator', 'interactor']:

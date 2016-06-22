@@ -9,30 +9,13 @@ from .. import config
 from .. import global_vars
 
 
-def get_login_password():
-    if config.login:
-        print('Using login %s from config' % config.login)
-    else:
-        print('Enter login:', end=' ')
-        sys.stdout.flush()
-        config.login = sys.stdin.readline().strip()
-    if config.password:
-        print('Using password from config')
-    else:
-        config.password = getpass('Enter password: ')
-
-
 def process_init(problem_id):
-    get_login_password()
     global_vars.problem = ProblemSession(config.polygon_url, problem_id)
-    global_vars.problem.create_new_session(config.login, config.password)
     save_session()
 
 
 def process_init_contest(contest_id):
-    get_login_password()
     contest = ProblemSession(config.polygon_url, None)
-    contest.login(config.login, config.password)
     problems = contest.get_contest_problems(contest_id)
     print(problems)
     result = PrettyTable(['Problem name', 'Problem id', 'Status'])

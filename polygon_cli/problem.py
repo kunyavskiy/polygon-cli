@@ -3,6 +3,7 @@ import json
 import random
 import sys
 import time
+from getpass import getpass
 
 import requests
 
@@ -11,6 +12,29 @@ from . import polygon_file
 from . import utils
 from .exceptions import PolygonNotLoginnedError, ProblemNotFoundError, PolygonApiError
 from .polygon_html_parsers import *
+
+
+def get_login_password():
+    if config.login:
+        print('Using login %s from config' % config.login)
+    else:
+        print('Enter login:', end=' ')
+        sys.stdout.flush()
+        config.login = sys.stdin.readline().strip()
+    if config.password:
+        print('Using password from config')
+    else:
+        config.password = getpass('Enter password: ')
+
+
+def parse_api_file_list(files, files_raw, type):
+    for j in files_raw:
+        polygon_file = PolygonFile()
+        polygon_file.type = type
+        polygon_file.name = j["name"]
+        polygon_file.date = j["modificationTimeSeconds"]
+        polygon_file.size = j["length"]
+        files.append(polygon_file)
 
 
 class ProblemSession:
@@ -28,6 +52,7 @@ class ProblemSession:
         self.sessionId = None
         self.ccid = None
         self.local_files = []
+        self.relogin_done = False
 
     def use_ready_session(self, data):
         """
@@ -100,12 +125,19 @@ class ProblemSession:
         :rtype: requests.Response
         :raises: PolygonNotLoginnedError
         """
+        if self.sessionId is None:
+            self.renew_http_data()
         print('Sending request to ' + utils.prepare_url_print(url), end=' ')
         sys.stdout.flush()
         result = self.session.request(method, url, **kw)
         print(result.status_code)
         if result.url and result.url.startswith(config.polygon_url + '/login'):
-            raise PolygonNotLoginnedError()
+            if not self.relogin_done:
+                self.renew_http_data()
+                return self.send_request(method, url, **kw)
+            else:
+                print('Already tried to relogin, but it didn''t helped')
+                raise PolygonNotLoginnedError()
         return result
 
     def send_api_request(self, api_method, params, is_json=True, problem_data=True):
@@ -114,8 +146,7 @@ class ProblemSession:
         params["apiKey"] = config.api_key
         params["time"] = int(time.time())
         if problem_data:
-            params["owner"] = self.owner
-            params["problemName"] = self.problem_name
+            params["problemId"] = self.problem_id
         signature_random = ''.join([chr(random.SystemRandom().randint(0, 25) + ord('a')) for _ in range(6)])
         signature_random = utils.convert_to_bytes(signature_random)
         param_list = [(utils.convert_to_bytes(key), utils.convert_to_bytes(params[key])) for key in params]
@@ -174,13 +205,10 @@ class ProblemSession:
                 'problem_name': parser.problemName
                 }
 
-    def create_new_session(self, login, password):
-        """
-
-        :type login: str
-        :type password: str
-        """
-        self.login(login, password)
+    def renew_http_data(self):
+        self.relogin_done = True
+        get_login_password()
+        self.login(config.login, config.password)
         links = self.get_problem_links()
         if links['start'] is None and links['continue'] is None:
             raise ProblemNotFoundError()
@@ -189,8 +217,6 @@ class ProblemSession:
         parser = ExtractSessionParser()
         parser.feed(problem_page)
         self.sessionId = parser.session
-        self.owner = links["owner"]
-        self.problem_name = links["problem_name"]
 
     def get_solutions_list(self):
         """
@@ -199,7 +225,7 @@ class ProblemSession:
         """
         solutions_raw = self.send_api_request('problem.solutions', {})
         files = []
-        self.parse_api_file_list(files, solutions_raw, 'solution')
+        parse_api_file_list(files, solutions_raw, 'solution')
         return files
 
     def get_files_list(self):
@@ -211,22 +237,13 @@ class ProblemSession:
         files = []
         types_map = {'sourceFiles': 'source', 'resourceFiles': 'resource', 'auxFiles': 'attachment'}
         for i in types_map:
-            self.parse_api_file_list(files, files_raw[i], types_map[i])
+            parse_api_file_list(files, files_raw[i], types_map[i])
 
         script = PolygonFile()
         script.type = 'script'
         script.name = 'script'
         files.append(script)
         return files
-
-    def parse_api_file_list(self, files, files_raw, type):
-        for j in files_raw:
-            polygon_file = PolygonFile()
-            polygon_file.type = type
-            polygon_file.name = j["name"]
-            polygon_file.date = j["modificationTimeSeconds"]
-            polygon_file.size = j["length"]
-            files.append(polygon_file)
 
     def get_all_files_list(self):
         """
@@ -315,9 +332,9 @@ class ProblemSession:
                                       {'testset': 'tests', 'testIndex': test_num},
                                       is_json=False)
         utils.safe_rewrite_file('%03d' % int(test_num), input)
-        answer_url = self.make_link('plain-answer/answer-%s.txt?testset=tests&index=%s' % (test_num, test_num),
-                                    ccid=True, ssid=True)
-        answer = self.send_request('GET', answer_url).content
+        answer = self.send_api_request('problem.testAnswer',
+                                       {'testset': 'tests', 'testIndex': test_num},
+                                       is_json=False)
         utils.safe_rewrite_file('%03d.a' % int(test_num), answer)
 
     def load_script(self):
@@ -346,10 +363,10 @@ class ProblemSession:
 
     def set_test_group(self, tests, group):
         for i in tests:
-            self.send_api_request('problem.saveTest', {'testset': 'tests', 'testIndex': i, 'testGroup' : group})
+            self.send_api_request('problem.saveTest', {'testset': 'tests', 'testIndex': i, 'testGroup': group})
 
     def get_hand_tests_list(self):
-        tests = self.send_api_request('problem.tests', {'testset' : 'tests'})
+        tests = self.send_api_request('problem.tests', {'testset': 'tests'})
         result = []
         for i in tests:
             if i["manual"]:
@@ -358,8 +375,8 @@ class ProblemSession:
 
     def get_contest_problems(self, contest_id):
         assert (self.problem_id is None)
-        contest_url = self.make_link('contest?contestId=' + str(contest_id), ccid=True, ssid=False)
-        data = self.send_request('GET', contest_url).text
-        parser = ContestPageParser()
-        parser.feed(data)
-        return parser.problems
+        problems = self.send_api_request('contest.problems', {'contestId': contest_id}, problem_data=False)
+        result = {}
+        for i in problems.keys():
+            result[problems[i]["name"]] = problems[i]["id"]
+        return result

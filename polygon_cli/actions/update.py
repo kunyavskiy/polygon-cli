@@ -6,8 +6,8 @@ from ..local_file import LocalFile
 
 
 def process_update(flat, to_update):
-    if not load_session() or global_vars.problem.sessionId is None:
-        fatal('No session known. Use relogin or init first.')
+    if not load_session():
+        fatal('No session known. Use init first.')
     files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for file in files:

@@ -8,7 +8,6 @@ from .actions import diff as diff_action
 from .actions import gettest as get_test_action
 from .actions import init as init_action
 from .actions import list as list_action
-from .actions import relogin as relogin_action
 from .actions import update as update_action
 from .exceptions import PolygonNotLoginnedError
 
@@ -23,7 +22,6 @@ subparsers = parser.add_subparsers(
 subparsers.required = True
 
 init_action.add_parser(subparsers)
-relogin_action.add_parser(subparsers)
 update_action.add_parser(subparsers)
 add_action.add_parser(subparsers)
 commit_action.add_parser(subparsers)
@@ -37,7 +35,7 @@ def main():
         options = parser.parse_args(argv[1:])
         options.func(options)
     except PolygonNotLoginnedError:
-        print('Can not login to polygon. Use relogin to update session')
+        print('Can not login to polygon.')
 
 
 if __name__ == "__main__":

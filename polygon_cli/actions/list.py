@@ -4,8 +4,8 @@ from .common import *
 
 
 def process_list():
-    if not load_session() or global_vars.problem.sessionId is None:
-        fatal('No session known. Use relogin or init first.')
+    if not load_session():
+        fatal('No session known. Use init first.')
     files = global_vars.problem.get_all_files_list()
     local_files = global_vars.problem.local_files
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Local name'])

@@ -2,8 +2,8 @@ from .common import *
 
 
 def process_diff(filename):
-    if not load_session() or global_vars.problem.sessionId is None:
-        fatal('No session known. Use relogin or init first.')
+    if not load_session():
+        fatal('No session known. Use init first.')
     file = global_vars.problem.get_local_by_filename(filename)
     if file is None:
         fatal('File %s not found' % filename)

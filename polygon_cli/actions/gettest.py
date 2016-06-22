@@ -2,8 +2,8 @@ from .common import *
 
 
 def process_get_test(tests):
-    if not load_session() or global_vars.problem.sessionId is None:
-        fatal('No session known. Use relogin or init first.')
+    if not load_session():
+        fatal('No session known. Use init first.')
     for i in tests:
         global_vars.problem.download_test(i)
     save_session()
