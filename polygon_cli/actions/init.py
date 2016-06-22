@@ -1,6 +1,3 @@
-import sys
-from getpass import getpass
-
 from prettytable import PrettyTable
 
 from .common import *

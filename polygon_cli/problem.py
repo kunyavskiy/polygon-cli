@@ -29,12 +29,12 @@ def get_login_password():
 
 def parse_api_file_list(files, files_raw, type):
     for j in files_raw:
-        polygon_file = PolygonFile()
-        polygon_file.type = type
-        polygon_file.name = j["name"]
-        polygon_file.date = j["modificationTimeSeconds"]
-        polygon_file.size = j["length"]
-        files.append(polygon_file)
+        file = polygon_file.PolygonFile()
+        file.type = type
+        file.name = j["name"]
+        file.date = j["modificationTimeSeconds"]
+        file.size = j["length"]
+        files.append(file)
 
 
 class ProblemSession:
@@ -239,7 +239,7 @@ class ProblemSession:
         for i in types_map:
             parse_api_file_list(files, files_raw[i], types_map[i])
 
-        script = PolygonFile()
+        script = polygon_file.PolygonFile()
         script.type = 'script'
         script.name = 'script'
         files.append(script)
