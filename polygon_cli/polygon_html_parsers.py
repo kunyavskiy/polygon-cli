@@ -54,17 +54,6 @@ class ProblemsPageParser(HTMLParser):
             self.owner += data.strip()
 
 
-class ContestPageParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.problems = {}
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'tr':
-            if len(attrs) >= 2 and attrs[0][0] == "problemid" and attrs[1][0] == 'problemname':
-                self.problems[attrs[1][1]] = attrs[0][1]
-
-
 class ExtractSessionParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -82,13 +71,3 @@ class ExtractSessionParser(HTMLParser):
     def handle_data(self, data):
         if self.inCorrectSpan:
             self.session = data
-
-class FindHandTestsParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.tests = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "pre":
-            if len(attrs) == 2 and attrs[0][0] == 'id' and attrs[0][1].startswith('text'):
-                self.tests.append(int(attrs[0][1][4:]))
