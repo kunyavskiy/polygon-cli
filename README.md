@@ -20,7 +20,7 @@ Command-line tool for [polygon](https://polygon.codeforces.com/)
 1. Install Python3 and setuputils module (for example, it goes with pip3)
 2. Checkout repo using `git clone https://github.com/kunyavskiy/polygon-cli.git`
 3. Edit config.py file. Add api\_key and api\_secret to it. If you want, you can also add
-   login and password. Then it will be not asked, it not-api requests needed. 
+   login and password. Then it will not be asked wehn non-api requests need it.
    You should change:
    ```Python
    login = None
@@ -38,9 +38,11 @@ Command-line tool for [polygon](https://polygon.codeforces.com/)
 
    WARNING: password and api\_key/api\_secret are stored in plain text in your Python Scripts directory.
 
-4. Run `python3 setup.py install`
-  * On Linux, it will put executable polygon-cli in /usr/local/bin
-  * On Windows, it will put execuable polygon-cli in Scripts directory of your Python3 installtion. It should be added to path variable for more simple usage
+4. Run `python3 setup.py install [--user]`
+  * On Linux, it will put the executable polygon-cli in /usr/local/bin
+  * On Windows, it will put the execuable polygon-cli in Scripts directory of your Python3 installtion. It should be added to the path variable for easier usage.
+
+   Add the option `--user` to install as local user without root/administrator privileges.
 5. Even if it doesn't run, install the dependencies manually as below,
   * `pip3 install requests` 
   * `pip3 install colorama` 
