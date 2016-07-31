@@ -20,7 +20,7 @@ Command-line tool for [polygon](https://polygon.codeforces.com/)
 1. Install Python3 and setuputils module (for example, it goes with pip3)
 2. Checkout repo using `git clone https://github.com/kunyavskiy/polygon-cli.git`
 3. Edit config.py file. Add api\_key and api\_secret to it. If you want, you can also add
-   login and password. Then it will not be asked wehn non-api requests need it.
+   login and password. Then it will not be asked when non-api requests need it.
    You should change:
    ```Python
    login = None
