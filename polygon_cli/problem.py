@@ -342,6 +342,11 @@ class ProblemSession:
         for t in tests:
             self.download_test(t["index"])
 
+    def download_all_tests(self):
+        tests = self.send_api_request('problem.tests',{'testset': 'tests'})
+        for t in tests:
+            self.download_test(t["index"])
+
     def load_script(self):
         return self.send_api_request('problem.script', {'testset': 'tests'}, is_json=False)
 
