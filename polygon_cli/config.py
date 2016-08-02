@@ -9,7 +9,13 @@ password = None
 api_key = None
 api_secret = None
 internal_directory_path = '.polygon-cli'
-solutions_path = 'solutions'
+subdirectory_paths = {
+    'attachment': 'src',
+    'resource': 'src',
+    'solutions': 'solutions',
+    'source': 'src',
+    'script': '',
+}
 sessionFile = 'session.json'
 
 
@@ -18,11 +24,11 @@ def get_session_file_path():
 
 
 def get_solution_path(solution):
-    return os.path.join(solutions_path, solution)
+    return os.path.join(subdirectory_paths['solutions'], solution)
 
 
 def get_download_solution_path(solution):
-    return os.path.join(internal_directory_path, solutions_path, solution)
+    return os.path.join(internal_directory_path, subdirectory_paths['solutions'], solution)
 
 
 def get_merge_tool(old, our, theirs):
