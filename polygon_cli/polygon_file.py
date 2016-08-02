@@ -33,14 +33,6 @@ class PolygonFile:
         return file_text
 
     def get_default_local_dir(self):
-        if self.type == 'solution':
-            return 'solutions'
-        if self.type == 'source':
-            return 'src'
-        if self.type == 'resource':
-            return 'src'
-        if self.type == 'attachment':
-            return 'src'
-        if self.type == 'script':
-            return ''
+        if self.type in list(subdirectory_path.keys):
+            return subdirectory_path[self.type]
         raise NotImplementedError("loading files of type %s" % self.type)

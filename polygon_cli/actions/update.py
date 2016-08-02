@@ -54,6 +54,6 @@ def add_parser(subparsers):
             'update',
             help="Download files from polygon working copy, and merge with local copy"
     )
-    parser_update.add_argument('--flat', action='store_true', help='Load files in current folder, not solutions/src')
+    parser_update.add_argument('--flat', action='store_true', help='Load files in current folder, not subdirectories')
     parser_update.add_argument('file', nargs='*', help='List of files to download (all by default)')
     parser_update.set_defaults(func=lambda options: process_update(options.flat, options.file))
