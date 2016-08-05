@@ -1,3 +1,4 @@
+from . import config
 from . import global_vars
 from . import utils
 
@@ -33,6 +34,6 @@ class PolygonFile:
         return file_text
 
     def get_default_local_dir(self):
-        if self.type in list(subdirectory_path.keys):
-            return subdirectory_path[self.type]
+        if self.type in list(config.subdirectory_paths.keys()):
+            return config.subdirectory_paths[self.type]
         raise NotImplementedError("loading files of type %s" % self.type)
