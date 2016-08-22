@@ -1,6 +1,6 @@
 from . import global_vars
 from . import utils
-
+from .config import subdirectory_paths
 
 class PolygonFile:
     def __init__(self):
@@ -33,6 +33,6 @@ class PolygonFile:
         return file_text
 
     def get_default_local_dir(self):
-        if self.type in list(subdirectory_path.keys):
-            return subdirectory_path[self.type]
+        if self.type in subdirectory_paths:
+            return subdirectory_paths[self.type]
         raise NotImplementedError("loading files of type %s" % self.type)
