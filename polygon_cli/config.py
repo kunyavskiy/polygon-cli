@@ -12,7 +12,7 @@ internal_directory_path = '.polygon-cli'
 subdirectory_paths = {
     'attachment': 'src',
     'resource': 'src',
-    'solutions': 'solutions',
+    'solution': 'solutions',
     'source': 'src',
     'script': '',
 }
