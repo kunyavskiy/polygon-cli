@@ -322,7 +322,7 @@ class ProblemSession:
                 return local
         return None
 
-    def download_test(self, test_num):
+    def download_test(self, test_num, test_directory = '.'):
         """
 
         :type test_num: str
@@ -331,16 +331,16 @@ class ProblemSession:
         input = self.send_api_request('problem.testInput',
                                       {'testset': 'tests', 'testIndex': test_num},
                                       is_json=False)
-        utils.safe_rewrite_file(config.subdirectory_paths['test'] + '/%03d' % int(test_num), utils.convert_newlines(input))
+        utils.safe_rewrite_file(test_directory + '/%03d' % int(test_num), utils.convert_newlines(input))
         answer = self.send_api_request('problem.testAnswer',
                                        {'testset': 'tests', 'testIndex': test_num},
                                        is_json=False)
-        utils.safe_rewrite_file(config.subdirectory_paths['test'] + '/%03d.a' % int(test_num), utils.convert_newlines(answer))
+        utils.safe_rewrite_file(test_directory + '/%03d.a' % int(test_num), utils.convert_newlines(answer))
 
     def download_all_tests(self):
         tests = self.send_api_request('problem.tests',{'testset': 'tests'})
         for t in tests:
-            self.download_test(t["index"])
+            self.download_test(t["index"], config.subdirectory_paths['test'])
 
     def load_script(self):
         return self.send_api_request('problem.script', {'testset': 'tests'}, is_json=False)
