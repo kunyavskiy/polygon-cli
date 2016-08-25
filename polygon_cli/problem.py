@@ -331,11 +331,11 @@ class ProblemSession:
         input = self.send_api_request('problem.testInput',
                                       {'testset': 'tests', 'testIndex': test_num},
                                       is_json=False)
-        utils.safe_rewrite_file('%03d' % int(test_num), utils.convert_newlines(input))
+        utils.safe_rewrite_file(config.subdirectory_paths['test'] + '/%03d' % int(test_num), utils.convert_newlines(input))
         answer = self.send_api_request('problem.testAnswer',
                                        {'testset': 'tests', 'testIndex': test_num},
                                        is_json=False)
-        utils.safe_rewrite_file('%03d.a' % int(test_num), utils.convert_newlines(answer))
+        utils.safe_rewrite_file(config.subdirectory_paths['test'] + '/%03d.a' % int(test_num), utils.convert_newlines(answer))
 
     def download_all_tests(self):
         tests = self.send_api_request('problem.tests',{'testset': 'tests'})
