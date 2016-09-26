@@ -45,7 +45,7 @@ def process_init_contest(contest_id):
                 os.mkdir(problem)
                 old_path = os.getcwd()
                 os.chdir(problem)
-                process_init(problems[problem])
+                process_init(str(problems[problem]))
                 os.chdir(old_path)
                 result.add_row([problem, problems[problem], colors.success('Done')])
             except Exception as e:
