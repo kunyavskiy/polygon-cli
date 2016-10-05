@@ -11,7 +11,7 @@ from . import config
 
 
 def read_file(filename):
-    f = open(filename, 'r')
+    f = open(filename, 'rb')
     l = f.readlines()
     f.close()
     return l
@@ -36,7 +36,7 @@ def safe_rewrite_file(path, content, openmode='wb'):
 
 
 def merge_files(old, our, theirs):
-    if open(old, 'r').read().splitlines() == open(theirs, 'r').read().splitlines():
+    if open(old, 'rb').read().splitlines() == open(theirs, 'rb').read().splitlines():
         return 'Not changed'
     p = Popen(config.get_merge_tool(old, our, theirs), stdout=PIPE, shell=True)
     diff3out, _ = p.communicate()
