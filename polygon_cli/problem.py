@@ -104,12 +104,16 @@ class ProblemSession:
                 link += '&'
             else:
                 link += '?'
+            if self.ccid is None:
+                self.renew_http_data()
             link += 'ccid=%s' % self.ccid
         if ssid:
             if link.find('?') != -1:
                 link += '&'
             else:
                 link += '?'
+            if self.sessionId is None:
+                self.renew_http_data()
             link += 'session=%s' % self.sessionId
         if link.startswith('/'):
             result = self.polygon_address + link
@@ -125,8 +129,6 @@ class ProblemSession:
         :rtype: requests.Response
         :raises: PolygonNotLoginnedError
         """
-        if self.sessionId is None:
-            self.renew_http_data()
         print('Sending request to ' + utils.prepare_url_print(url), end=' ')
         sys.stdout.flush()
         result = self.session.request(method, url, **kw)
