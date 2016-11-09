@@ -73,3 +73,14 @@ class ExtractSessionParser(HTMLParser):
     def handle_data(self, data):
         if self.inCorrectSpan:
             self.session = data
+
+class PackageParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.url = None
+
+    def handle_starttag(self, tag, attrs):
+        if self.url is None and tag == "a":
+            for e in attrs:
+                if e[0] == 'href' and e[1].find('windows.zip') >= 0: # TODO change to something better
+                    self.url = e[1]

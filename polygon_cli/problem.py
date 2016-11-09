@@ -399,3 +399,24 @@ class ProblemSession:
         for i in problems.keys():
             result[problems[i]["name"]] = problems[i]["id"]
         return result
+
+    def download_last_package(self):
+        url = self.make_link('package', ssid=True, ccid=True)
+        data = self.send_request('GET', url).text
+        parser = PackageParser()
+        parser.feed(data)
+        print(parser.url)
+        if parser.url is None:
+            print('No package created')
+            return
+        link = self.make_link(parser.url, ssid=True, ccid=False)
+        filename = parser.url
+        filename = filename[:filename.find('.zip')]
+        filename = filename[filename.rfind('/') + 1:]
+        filename = filename[:filename.rfind('-')]
+        f = open('%s.zip' % (filename), 'wb')
+        r = self.send_request('GET', link)
+        for c in r.iter_content(1024):
+            if (c):
+                f.write(c)
+        f.close()

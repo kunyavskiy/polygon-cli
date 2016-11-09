@@ -9,6 +9,7 @@ from .actions import gettest as get_test_action
 from .actions import init as init_action
 from .actions import list as list_action
 from .actions import update as update_action
+from .actions import package as download_package_action
 from .exceptions import PolygonNotLoginnedError
 
 parser = argparse.ArgumentParser(prog="polygon-cli")
@@ -28,6 +29,7 @@ commit_action.add_parser(subparsers)
 list_action.add_parser(subparsers)
 diff_action.add_parser(subparsers)
 get_test_action.add_parser(subparsers)
+download_package_action.add_parser(subparsers)
 
 
 def main():
