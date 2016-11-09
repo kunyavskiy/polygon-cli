@@ -196,15 +196,27 @@ class ProblemSession:
 
         :rtype: dict
         """
-        url = self.make_link('problems', ccid=True)
-        problems_page = self.send_request('GET', url).text
-        parser = ProblemsPageParser(self.problem_id)
-        parser.feed(problems_page)
-        return {'continue': parser.continueLink,
-                'discard': parser.discardLink,
-                'start': parser.startLink,
-                'owner': parser.owner,
-                'problem_name': parser.problemName
+        currentpage = 1
+        while True:
+            url = self.make_link('problems?page=%d' % currentpage, ccid=True)
+            problems_page = self.send_request('GET', url).text
+            parser = ProblemsPageParser(self.problem_id)
+            parser.feed(problems_page)
+            if parser.continueLink or parser.startLink:
+                return {'continue': parser.continueLink,
+                        'discard': parser.discardLink,
+                        'start': parser.startLink,
+                        'owner': parser.owner,
+                        'problem_name': parser.problemName
+                        }
+            if currentpage >= parser.numberOfProblemPages:
+                break
+            currentpage += 1
+        return {'continue': None,
+                'discard': None,
+                'start': None,
+                'owner': None,
+                'problem_name': None
                 }
 
     def renew_http_data(self):

@@ -23,6 +23,7 @@ class ProblemsPageParser(HTMLParser):
         self.owner = ''
         self.problemName = ''
         self.problemId = problem_id
+        self.numberOfProblemPages = 0
 
     def handle_starttag(self, tag, attrs):
         if tag == 'tr':
@@ -39,6 +40,10 @@ class ProblemsPageParser(HTMLParser):
                 self.discardLink = attrs[0][1]
             if attrs[2][1].startswith('START'):
                 self.startLink = attrs[0][1]
+        if tag == 'a' and attrs[0][0] == 'href' and attrs[0][1].find('/problems?page=') >= 0:
+            link = attrs[0][1]
+            link = link[len('/problems?page='):]
+            self.numberOfProblemPages = int(link[:link.find('&')])
 
     def handle_endtag(self, tag):
         if tag == 'tr':
