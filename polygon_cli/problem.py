@@ -104,12 +104,16 @@ class ProblemSession:
                 link += '&'
             else:
                 link += '?'
+            if self.ccid is None:
+                self.renew_http_data()
             link += 'ccid=%s' % self.ccid
         if ssid:
             if link.find('?') != -1:
                 link += '&'
             else:
                 link += '?'
+            if self.sessionId is None:
+                self.renew_http_data()
             link += 'session=%s' % self.sessionId
         if link.startswith('/'):
             result = self.polygon_address + link
@@ -125,8 +129,6 @@ class ProblemSession:
         :rtype: requests.Response
         :raises: PolygonNotLoginnedError
         """
-        if self.sessionId is None:
-            self.renew_http_data()
         print('Sending request to ' + utils.prepare_url_print(url), end=' ')
         sys.stdout.flush()
         result = self.session.request(method, url, **kw)
@@ -194,15 +196,27 @@ class ProblemSession:
 
         :rtype: dict
         """
-        url = self.make_link('problems', ccid=True)
-        problems_page = self.send_request('GET', url).text
-        parser = ProblemsPageParser(self.problem_id)
-        parser.feed(problems_page)
-        return {'continue': parser.continueLink,
-                'discard': parser.discardLink,
-                'start': parser.startLink,
-                'owner': parser.owner,
-                'problem_name': parser.problemName
+        currentpage = 1
+        while True:
+            url = self.make_link('problems?page=%d' % currentpage, ccid=True)
+            problems_page = self.send_request('GET', url).text
+            parser = ProblemsPageParser(self.problem_id)
+            parser.feed(problems_page)
+            if parser.continueLink or parser.startLink:
+                return {'continue': parser.continueLink,
+                        'discard': parser.discardLink,
+                        'start': parser.startLink,
+                        'owner': parser.owner,
+                        'problem_name': parser.problemName
+                        }
+            if currentpage >= parser.numberOfProblemPages:
+                break
+            currentpage += 1
+        return {'continue': None,
+                'discard': None,
+                'start': None,
+                'owner': None,
+                'problem_name': None
                 }
 
     def renew_http_data(self):
@@ -385,3 +399,24 @@ class ProblemSession:
         for i in problems.keys():
             result[problems[i]["name"]] = problems[i]["id"]
         return result
+
+    def download_last_package(self):
+        url = self.make_link('package', ssid=True, ccid=True)
+        data = self.send_request('GET', url).text
+        parser = PackageParser()
+        parser.feed(data)
+        print(parser.url)
+        if parser.url is None:
+            print('No package created')
+            return
+        link = self.make_link(parser.url, ssid=True, ccid=False)
+        filename = parser.url
+        filename = filename[:filename.find('.zip')]
+        filename = filename[filename.rfind('/') + 1:]
+        filename = filename[:filename.rfind('-')]
+        f = open('%s.zip' % (filename), 'wb')
+        r = self.send_request('GET', link)
+        for c in r.iter_content(1024):
+            if (c):
+                f.write(c)
+        f.close()
