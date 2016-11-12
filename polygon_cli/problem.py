@@ -5,6 +5,8 @@ import sys
 import time
 from getpass import getpass
 
+from xml.etree import ElementTree
+import os
 import requests
 
 from . import config
@@ -420,3 +422,112 @@ class ProblemSession:
             if (c):
                 f.write(c)
         f.close()
+
+    def import_problem_from_package(self, directory):
+        problem_node = ElementTree.parse(os.path.join(directory, 'problem.xml'))
+        if not problem_node:
+            print('bad problem.xml file in ' + os.path.abspath(xmlfile.name))
+            return
+        if problem_node.find('tags'):
+            print('tags:')
+            for tag_node in problem_node.find('tags').findall('tag'):
+                print(tag_node.attrib['value'])
+
+        def get_file_content_options(filepath):
+            options = {}
+            f = open(filepath, 'r')
+            options['name'] = os.path.basename(f.name)
+            options['file'] = f.read()
+            f.close()
+            return options
+
+        def get_executable_options(node):
+            filepath = os.path.join(directory, node.find('source').attrib['path'])
+            options = get_file_content_options(filepath)
+            options['checkExisting'] = 'true'
+            options['sourceType'] = node.find('source').attrib['type']
+            return options
+
+        for solution_node in problem_node.find('assets').find('solutions').findall('solution'):
+            options = get_executable_options(solution_node)
+            xml_tag_to_api_tag = {'accepted' : 'OK', 'main' : 'MA', 'time-limit-exceeded' : 'TL',
+                                    'memory-limit-exceeded' : 'ML', 'wrong-answer' : 'WA',
+                                    'incorrect' : 'RJ'}
+            options['tag'] = xml_tag_to_api_tag[solution_node.attrib['tag']]
+            try:
+                print('Adding solution: ' + options['name'])
+                self.send_api_request('problem.saveSolution', options)
+            except PolygonApiError as e:
+                print(e)
+        for resource_node in problem_node.find('files').find('resources').findall('file'):
+            filepath = resource_node.attrib['path']
+            if filepath.endswith('testlib.h') or filepath.endswith('olymp.sty') or \
+                filepath.endswith('problem.tex') or filepath.endswith('statements.ftl'):
+                continue
+            options = get_file_content_options(os.path.join(directory, filepath))
+            options['type'] = 'resource'
+            options['checkExisting'] = 'true'
+            try:
+                print('Adding resource: ' + options['name'])
+                self.send_api_request('problem.saveFile', options)
+            except PolygonApiError as e:
+                print(e)
+        for executable_node in problem_node.find('files').find('executables').findall('executable'):
+            options = get_executable_options(executable_node)
+            options['type'] = 'source'
+            try:
+                print('Adding executable: ' + options['name'])
+                self.send_api_request('problem.saveFile', options)
+            except PolygonApiError as e:
+                print(e)
+        for checker_node in problem_node.find('assets').findall('checker'):
+            if 'name' in checker_node.attrib and checker_node.attrib['name'].startswith('std::'):
+                checker_name = checker_node.attrib['name']
+            else:
+                checker_name = checker_node.find('copy').attrib['path']
+            try:
+                print('Setting checker: ' + checker_name)
+                self.send_api_request('problem.setChecker', {'checker' : checker_name})
+            except PolygonApiError as e:
+                print(e)
+        for validator_node in problem_node.find('assets').find('validators').findall('validator'):
+            validator_name = os.path.basename(validator_node.find('source').attrib['path'])
+            try:
+                print('Setting validator: ' + validator_name)
+                self.send_api_request('problem.setValidator', {'validator' : validator_name})
+            except PolygonApiError as e:
+                print(e)
+        for testset_node in problem_node.find('judging').findall('testset'):
+            testset_name = testset_node.attrib['name']
+            input_pattern = testset_node.find('input-path-pattern').text
+            print('testset = ' + testset_name)
+            test_id = 0
+            script = ''
+            for test_node in testset_node.find('tests').findall('test'):
+                test_id += 1
+                if test_node.attrib['method'] == 'manual':
+                    options = {}
+                    options['checkExisting'] = 'true'
+                    options['testset'] = testset_name
+                    options['testIndex'] = str(test_id)
+                    test_file = open(os.path.join(directory, input_pattern % test_id), 'r')
+                    options['testInput'] = test_file.read()
+                    test_file.close()
+                    if 'sample' in test_node.attrib:
+                        options['testUseInStatements'] = test_node.attrib['sample']
+                    try:
+                        print('Adding test %d' % test_id)
+                        self.send_api_request('problem.saveTest', options)
+                    except PolygonApiError as e:
+                        print(e)
+                else:
+                    script_line = test_node.attrib['cmd'] + (' > %d' % test_id)
+                    script += script_line + '\n'
+                    print('Added "' + script_line + '" to script')
+            if len(script) > 0:
+                try:
+                    self.send_api_request('problem.saveScript', {'testset' : testset_name,
+                                                                'source' : script})
+                except PolygonApiError as e:
+                    print(e)
+            assert(test_id == int(testset_node.find('test-count').text))
