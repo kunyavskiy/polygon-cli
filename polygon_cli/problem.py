@@ -435,7 +435,7 @@ class ProblemSession:
 
         def get_file_content_options(filepath):
             options = {}
-            f = open(filepath, 'r')
+            f = open(filepath, 'rb')
             options['name'] = os.path.basename(f.name)
             options['file'] = f.read()
             f.close()
