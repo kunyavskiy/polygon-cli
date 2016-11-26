@@ -283,6 +283,8 @@ class ProblemSession:
         options = {}
         if name.endswith('.cpp'):
             options['sourceType'] = 'cpp.g++11'
+        elif name.endswith('.java'):
+            options['sourceType'] = 'java8'
         if is_new:
             options['checkExisting'] = 'true'
         else:
