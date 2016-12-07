@@ -453,14 +453,16 @@ class ProblemSession:
                 for f in masks:
                     ret += glob.glob(os.path.join(directory, f))
                 return ret
-            for test_s in get_files(["src/*.hand", "src/*.manual", "src/*.t"]):
+            for test_s in get_files(["src/*.hand", "src/*.manual", "src/*.t", "src/*.sample"]):
                 test_id = int(os.path.splitext(os.path.basename(test_s))[0])
                 options = {}
                 options['checkExisting'] = 'true'
                 options['testset'] = 'tests'
                 options['testIndex'] = str(test_id)
-                test_file = open(test_s, 'r')
+                test_file = open(test_s, 'rb')
                 options['testInput'] = test_file.read()
+                if test_s.endswith('.sample'):
+                    options['testUseInStatements'] = 'true'
                 test_file.close()
                 try:
                     print('Adding test %d' % test_id)
