@@ -154,14 +154,16 @@ class ProblemSession:
             params["problemId"] = self.problem_id
         signature_random = ''.join([chr(random.SystemRandom().randint(0, 25) + ord('a')) for _ in range(6)])
         signature_random = utils.convert_to_bytes(signature_random)
-        param_list = [(utils.convert_to_bytes(key), utils.convert_to_bytes(params[key])) for key in params]
+        for i in params:
+            params[i] = utils.convert_to_bytes(params[i])
+        param_list = [(utils.convert_to_bytes(key), params[key]) for key in params]
         param_list.sort()
         signature_string = signature_random + b'/' + utils.convert_to_bytes(api_method)
         signature_string += b'?' + b'&'.join([i[0] + b'=' + i[1] for i in param_list])
         signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
         url = self.polygon_address + '/api/' + api_method
-        result = self.session.request('POST', url, data=params)
+        result = self.session.request('POST', url, files=params)
         print(result.status_code)
         if not is_json and result.status_code == 200:
             return result.content
