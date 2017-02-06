@@ -7,7 +7,7 @@ Command-line tool for [polygon](https://polygon.codeforces.com/)
 * requests lib
 * prettytable lib
 * colorama lib
-* diff3 avalible in path
+* diff and diff3 avalible in path
 
 ## Supported features
 
