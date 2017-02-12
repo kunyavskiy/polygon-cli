@@ -644,7 +644,8 @@ class ProblemSession:
                     group = test_node.attrib['group']
                     try:
                         print('Setting group %s for test %d' % (group, test_id))
-                        self.send_api_request('problem.saveTest', {'testGroup' : group})
+                        options = {'testset' : testset_name, 'testIndex' : str(test_id), 'testGroup' : group}
+                        self.send_api_request('problem.saveTest', options)
                     except PolygonApiError as e:
                         print(e)
             assert(test_id == int(testset_node.find('test-count').text))
