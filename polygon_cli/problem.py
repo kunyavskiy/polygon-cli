@@ -471,11 +471,12 @@ class ProblemSession:
                     self.send_api_request('problem.saveTest', options)
                 except PolygonApiError as e:
                     print(e)
-            for filepath in get_files(["solutions/*.cpp", "solutions/*.java", "solutions/*.pas", "solutions/*.dpr", "solutions/*.py"]):
+            for filepath in get_files(["solutions/*.cpp", "solutions/*.java", "solutions/*.pas", "solutions/*.dpr", \
+                                        "solutions/*.py", "solutions/*.c++"]):
                 options = get_file_content_options(filepath)
                 options['tag'] = 'RJ'
                 options['checkExisting'] = 'true'
-                if filepath.endswith('.cpp'):
+                if filepath.endswith('.cpp') or filepath.endswith('.c++'):
                     options['sourceType'] = 'cpp.g++11'
                 try:
                     print('Adding solution: ' + options['name'])
