@@ -9,8 +9,8 @@ def process_import_problem_from_package(directory):
 
 def add_parser(subparsers):
     parser_import_problem_from_package = subparsers.add_parser(
-            'import_problem',
+            'import_package',
             help="Imports problem from polygon package"
     )
-    parser_import_problem_from_package.add_argument('directory', help='Extracted package directory')
+    parser_import_problem_from_package.add_argument('directory', help='Extracted package directory, which contains problem.xml')
     parser_import_problem_from_package.set_defaults(func=lambda options: process_import_problem_from_package(options.directory))
