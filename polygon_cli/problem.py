@@ -447,7 +447,7 @@ class ProblemSession:
             options['checkExisting'] = 'true'
             options['sourceType'] = source_node.attrib['type']
             return options
-        if os.path.isfile(path_to_problemxml):
+        if os.path.isfile(path_to_problemxml): # TODO, make two functions import_problem and import_package
             problem_node = ElementTree.parse(path_to_problemxml)
         else:
             def get_files(masks):
@@ -455,6 +455,80 @@ class ProblemSession:
                 for f in masks:
                     ret += glob.glob(os.path.join(directory, f))
                 return ret
+            hsin_tests_added = 0
+            for test_s in get_files(["*.dummy.in.*"]):
+                test_id = int(test_s[test_s.rfind('.')+1:])
+                options = {}
+                options['checkExisting'] = 'true'
+                options['testset'] = 'tests'
+                options['testIndex'] = str(test_id)
+                test_file = open(test_s, 'rb')
+                hsin_tests_added += 1
+                options['testInput'] = test_file.read()
+                options['testDescription'] = 'polygon-cli import_problem, File %s' % test_s
+                options['testUseInStatements'] = 'true'
+                options['testGroup'] = '0'
+                test_file.close()
+                try:
+                    print('Adding %s hsin.hr sample test %d' % (test_s, test_id))
+                    self.send_api_request('problem.saveTest', options)
+                except PolygonApiError as e:
+                    print(e)
+            hsin_tests = {}
+            hsin_groups_enabled = False
+            for test_s in get_files(["*.in.*"]):
+                if 'dummy' in test_s:
+                    continue
+                test_id = test_s[test_s.rfind('.')+1:]
+                while test_id[-1].isalpha():
+                    hsin_groups_enabled = True
+                    test_id = test_id[:-1]
+                test_id = int(test_id)
+                if test_id not in hsin_tests:
+                    hsin_tests[test_id] = []
+                hsin_tests[test_id].append(test_s)
+            hsin_tests = list((key, value) for (key, value) in hsin_tests.items())
+            hsin_tests.sort(key=lambda x: x[0])
+            for group, tests in hsin_tests:
+                for test_s in tests:
+                    options = {}
+                    options['checkExisting'] = 'true'
+                    options['testset'] = 'tests'
+                    hsin_tests_added += 1
+                    options['testIndex'] = str(hsin_tests_added)
+                    test_file = open(test_s, 'rb')
+                    options['testInput'] = test_file.read()
+                    options['testDescription'] = 'polygon-cli, File %s' % test_s
+                    options['testGroup'] = str(group) if hsin_groups_enabled else '1'
+                    test_file.close()
+                    try:
+                        print('Adding %s hsin.hr test %d from group %d' % (test_s, hsin_tests_added, group))
+                        self.send_api_request('problem.saveTest', options)
+                    except PolygonApiError as e:
+                        print(e)
+            # hsin_main = list(filter(lambda x: 'dummy' not in x, get_files(["hsintests/*.in.*"])))
+            atcoder_tests = 0
+            for group in range(0, 100):
+                found = False
+                for test_id in range(0, 100):
+                    for test_s in get_files(["tests/%d_%02d.txt" % (group, test_id)]):
+                        options = {}
+                        options['checkExisting'] = 'true'
+                        options['testset'] = 'tests'
+                        atcoder_tests += 1
+                        options['testIndex'] = str(atcoder_tests)
+                        test_file = open(test_s, 'rb')
+                        options['testInput'] = test_file.read()
+                        options['testDescription'] = 'polygon-cli, File %s' % test_s
+                        options['testGroup'] = str(group)
+                        if group == 0:
+                            options['testUseInStatements'] = 'true'
+                        test_file.close()
+                        try:
+                            print('Adding atcoder test %d from group %d' % (atcoder_tests, group))
+                            self.send_api_request('problem.saveTest', options)
+                        except PolygonApiError as e:
+                            print(e)
             for test_s in get_files(["src/*.hand", "src/*.manual", "src/*.t", "src/*.sample"]):
                 test_id = int(os.path.splitext(os.path.basename(test_s))[0])
                 options = {}
