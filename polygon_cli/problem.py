@@ -494,13 +494,13 @@ class ProblemSession:
                     self.send_api_request('problem.saveFile', options)
                 except PolygonApiError as e:
                     print(e)
-            for filepath in get_files(["src/*.cpp", "src/*.pas", "src/*.java", "src/*.py", "src/*.dpr"]):
+            for filepath in get_files(["src/*.cpp", "src/*.c++", "src/*.pas", "src/*.java", "src/*.py", "src/*.dpr"]):
                 if os.path.basename(filepath) in {'testlib.pas'}:
                     continue
                 options = get_file_content_options(filepath)
                 options['type'] = 'source'
                 options['checkExisting'] = 'true'
-                if filepath.endswith('.cpp'):
+                if filepath.endswith('.cpp') or filepath.endswith('.c++'):
                     options['sourceType'] = 'cpp.g++11'
                 try:
                     print('Adding resource: ' + options['name'])
