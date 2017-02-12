@@ -463,6 +463,7 @@ class ProblemSession:
                 options['testIndex'] = str(test_id)
                 test_file = open(test_s, 'rb')
                 options['testInput'] = test_file.read()
+                options['testDescription'] = 'polygon-cli import_problem, File %s' % test_s
                 if test_s.endswith('.sample'):
                     options['testUseInStatements'] = 'true'
                 test_file.close()
