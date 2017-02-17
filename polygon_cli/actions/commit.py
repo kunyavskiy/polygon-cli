@@ -48,7 +48,7 @@ def process_commit(to_commit):
                     status = colors.warning('Outdated')
                     print('file %s is outdated: update first' % file.name)
                     break
-                new_text = open(old_path, 'rb').read()
+                new_text = open(file.get_path(), 'rb').read()
                 if polygon_text.splitlines() == new_text.splitlines():
                     status = colors.info('Not changed')
                     print('file %s not changed' % file.name)
