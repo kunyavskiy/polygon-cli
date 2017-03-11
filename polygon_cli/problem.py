@@ -282,12 +282,12 @@ class ProblemSession:
         """
         statements_raw = self.send_api_request('problem.statements', {})
         files = []
-        for language, files_raw in statements_raw.items():
+        for lang, files_raw in statements_raw.items():
             encoding = files_raw.get('encoding', None)
             for name, content in files_raw.items():
                 file = polygon_file.PolygonFile()
                 file.type = 'statement'
-                file.name = '%s/%s' % (language, name)
+                file.name = '%s/%s' % (lang, name)
                 file.content = polygon_file.PolygonFile.to_byte(content, encoding)
                 file.size = len(content)
                 files.append(file)
@@ -338,6 +338,20 @@ class ProblemSession:
         options['file'] = content
         try:
             self.send_api_request(api_method, options)
+        except PolygonApiError as e:
+            print(e)
+            return False
+
+        return True
+
+    def upload_statement(self, name, content):
+        lang, name = name.split('/')
+        options = {
+            'lang': lang,
+            name: content,
+        }
+        try:
+            self.send_api_request('problem.saveStatement', options)
         except PolygonApiError as e:
             print(e)
             return False

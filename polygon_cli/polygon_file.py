@@ -37,8 +37,8 @@ class PolygonFile:
                 file_text = self.content
             else:
                 data = global_vars.problem.send_api_request('problem.statements', {})
-                language, name = self.name.split('/')
-                data = data.get(language, {})
+                lang, name = self.name.split('/')
+                data = data.get(lang, {})
                 encoding = data.get('encoding', None)
                 content = data.get(name, None)
                 file_text = PolygonFile.to_byte(content, encoding)

@@ -16,6 +16,16 @@ class LocalFile:
         :type polygon_filename: str or None
         :type tag: str or None
         """
+
+        if type == 'statement':
+            assert filename is not None
+            assert dir is not None
+            assert name is not None
+            lang = os.path.basename(dir)
+            dir = os.path.dirname(dir)
+            filename = lang + '/' + filename
+            name = lang + '/' + name
+
         self.filename = filename
         self.dir = dir
         self.name = name
@@ -52,6 +62,9 @@ class LocalFile:
         if self.type == 'script':
             if not global_vars.problem.upload_script(content):
                 return False
+        elif self.type == 'statement':
+            if not global_vars.problem.upload_statement(self.filename, content):
+                return False
         elif not global_vars.problem.upload_file(self.filename, self.type, content, True, self.tag):
             return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
@@ -64,6 +77,9 @@ class LocalFile:
         content = file.read()
         if self.type == 'script':
             if not global_vars.problem.upload_script(content):
+                return False
+        elif self.type == 'statement':
+            if not global_vars.problem.upload_statement(self.filename, content):
                 return False
         elif not global_vars.problem.upload_file(self.filename, self.type, content, False):
             return False
