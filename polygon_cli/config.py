@@ -16,6 +16,7 @@ subdirectory_paths = {
     'source': 'src',
     'script': '',
     'test' : 'tests',
+    'statement': 'statements',
 }
 sessionFile = 'session.json'
 

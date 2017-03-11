@@ -275,12 +275,30 @@ class ProblemSession:
         files.append(script)
         return files
 
+    def get_statements_list(self):
+        """
+
+        :rtype: list of polygon_file.PolygonFile
+        """
+        statements_raw = self.send_api_request('problem.statements', {})
+        files = []
+        for language, files_raw in statements_raw.items():
+            encoding = files_raw.get('encoding', None)
+            for name, content in files_raw.items():
+                file = polygon_file.PolygonFile()
+                file.type = 'statement'
+                file.name = '%s/%s' % (language, name)
+                file.content = polygon_file.PolygonFile.to_byte(content, encoding)
+                file.size = len(content)
+                files.append(file)
+        return files
+
     def get_all_files_list(self):
         """
 
         :rtype: list of polygon_file.PolygonFile
         """
-        return self.get_files_list() + self.get_solutions_list()
+        return self.get_files_list() + self.get_solutions_list() + self.get_statements_list()
 
     def upload_file(self, name, type, content, is_new, tag=None, source_type=None):
         """
