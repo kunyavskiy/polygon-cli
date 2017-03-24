@@ -314,10 +314,12 @@ class ProblemSession:
         options = {}
         if type != 'resource':
             if source_type is None:
-                if name.endswith('.cpp') or name.endswith('.c++'):
+                if name.endswith('.cpp'):
                     options['sourceType'] = 'cpp.g++11'
                 elif name.endswith('.java'):
                     options['sourceType'] = 'java8'
+                elif name.endswith('.pas'):
+                    options['sourceType'] = 'pas.fpc'
             else:
                 options['sourceType'] = source_type
         if is_new:
