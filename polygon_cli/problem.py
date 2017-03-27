@@ -376,10 +376,12 @@ class ProblemSession:
         tests = self.get_tests()
         hand_tests = self.get_hand_tests_list(tests)
         groups = utils.parse_script_groups(script_content, hand_tests)
-        test_group = {i["index"]: i["group"] for i in tests}
+        test_group = {i["index"]: i["group"] if "group" in i else None for i in tests}
         if groups:
             for i in groups.keys():
                 bad_current_groups = list(filter(lambda x: test_group[x] != i, groups[i]))
+                if bad_current_groups:
+                    print('Set group ' + str(i) + ' for tests ' + str(bad_current_groups))
                 self.set_test_group(bad_current_groups, i)
         return True
 
