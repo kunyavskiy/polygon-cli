@@ -100,7 +100,7 @@ def parse_script_groups(content, hand_tests):
                 assert test_id not in hand_tests
             groups[cur_group].append(test_id)
             continue
-        cur_group = match.groups(0)[0]
+        cur_group = match.groups(0)[0].decode("ascii")
         groups[cur_group] = []
         any = True
     if not any:

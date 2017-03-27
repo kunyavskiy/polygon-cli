@@ -175,6 +175,12 @@ class ProblemSession:
             return result["result"]
         return None
 
+    def get_script_content(self):
+        for i in self.local_files:
+            if i.type == 'script':
+                return open(i.get_path(), 'rb').read()
+        return None
+
     def login(self, login, password):
         """
 
@@ -343,7 +349,7 @@ class ProblemSession:
                 return local
         return None
 
-    def download_test(self, test_num, test_directory = '.'):
+    def download_test(self, test_num, test_directory='.'):
         """
 
         :type test_num: str
@@ -359,7 +365,7 @@ class ProblemSession:
         utils.safe_rewrite_file(test_directory + '/%03d.a' % int(test_num), utils.convert_newlines(answer))
 
     def download_all_tests(self):
-        tests = self.send_api_request('problem.tests',{'testset': 'tests'})
+        tests = self.send_api_request('problem.tests', {'testset': 'tests'})
         for t in tests:
             self.download_test(t["index"], config.subdirectory_paths['test'])
 
@@ -367,11 +373,14 @@ class ProblemSession:
         return self.send_api_request('problem.script', {'testset': 'tests'}, is_json=False)
 
     def update_groups(self, script_content):
-        hand_tests = self.get_hand_tests_list()
+        tests = self.get_tests()
+        hand_tests = self.get_hand_tests_list(tests)
         groups = utils.parse_script_groups(script_content, hand_tests)
+        test_group = {i["index"]: i["group"] for i in tests}
         if groups:
             for i in groups.keys():
-                self.set_test_group(groups[i], i)
+                bad_current_groups = list(filter(lambda x: test_group[x] != i, groups[i]))
+                self.set_test_group(bad_current_groups, i)
         return True
 
     def upload_script(self, content):
@@ -391,8 +400,10 @@ class ProblemSession:
         for i in tests:
             self.send_api_request('problem.saveTest', {'testset': 'tests', 'testIndex': i, 'testGroup': group})
 
-    def get_hand_tests_list(self):
-        tests = self.send_api_request('problem.tests', {'testset': 'tests'})
+    def get_tests(self):
+        return self.send_api_request('problem.tests', {'testset': 'tests'})
+
+    def get_hand_tests_list(self, tests):
         result = []
         for i in tests:
             if i["manual"]:
@@ -430,6 +441,7 @@ class ProblemSession:
 
     def import_problem_from_package(self, directory):
         path_to_problemxml = os.path.join(directory, 'problem.xml')
+
         def get_file_content_options(filepath):
             options = {}
             f = open(filepath, 'rb')
@@ -437,6 +449,7 @@ class ProblemSession:
             options['file'] = f.read()
             f.close()
             return options
+
         def get_executable_options(node):
             source_node = node.find('source')
             if source_node.find('file') is not None:
@@ -446,21 +459,22 @@ class ProblemSession:
             options['checkExisting'] = 'true'
             options['sourceType'] = source_node.attrib['type']
             return options
+
         if os.path.isfile(path_to_problemxml):
             problem_node = ElementTree.parse(path_to_problemxml)
         else:
             print("problem.xml not found or couldn't be opened")
             return
-        if problem_node.find('tags') is not None: # need API function to add tags
+        if problem_node.find('tags') is not None:  # need API function to add tags
             print('tags:')
             for tag_node in problem_node.find('tags').findall('tag'):
                 print(tag_node.attrib['value'])
         assets_node = problem_node.find('assets')
         for solution_node in assets_node.find('solutions').findall('solution'):
             options = get_executable_options(solution_node)
-            xml_tag_to_api_tag = {'accepted' : 'OK', 'main' : 'MA', 'time-limit-exceeded' : 'TL',
-                                    'memory-limit-exceeded' : 'ML', 'wrong-answer' : 'WA',
-                                    'incorrect' : 'RJ'}
+            xml_tag_to_api_tag = {'accepted': 'OK', 'main': 'MA', 'time-limit-exceeded': 'TL',
+                                  'memory-limit-exceeded': 'ML', 'wrong-answer': 'WA',
+                                  'incorrect': 'RJ'}
             options['tag'] = xml_tag_to_api_tag[solution_node.attrib['tag']]
             try:
                 print('Adding solution: ' + options['name'])
@@ -474,7 +488,7 @@ class ProblemSession:
                 for resource_node in resources_node.findall('file'):
                     filepath = resource_node.attrib['path']
                     if filepath.endswith('testlib.h') or filepath.endswith('olymp.sty') or \
-                        filepath.endswith('problem.tex') or filepath.endswith('statements.ftl'):
+                            filepath.endswith('problem.tex') or filepath.endswith('statements.ftl'):
                         continue
                     options = get_file_content_options(os.path.join(directory, filepath))
                     options['type'] = 'resource'
@@ -501,7 +515,7 @@ class ProblemSession:
                 checker_name = checker_node.find('copy').attrib['path']
             try:
                 print('Setting checker: ' + checker_name)
-                self.send_api_request('problem.setChecker', {'checker' : checker_name})
+                self.send_api_request('problem.setChecker', {'checker': checker_name})
             except PolygonApiError as e:
                 print(e)
         validators_node = assets_node.find('validators')
@@ -510,7 +524,7 @@ class ProblemSession:
                 validator_name = os.path.basename(validator_node.find('source').attrib['path'])
                 try:
                     print('Setting validator: ' + validator_name)
-                    self.send_api_request('problem.setValidator', {'validator' : validator_name})
+                    self.send_api_request('problem.setValidator', {'validator': validator_name})
                 except PolygonApiError as e:
                     print(e)
         for testset_node in problem_node.find('judging').findall('testset'):
@@ -544,7 +558,7 @@ class ProblemSession:
                             tests_from_file[cmd] = []
                         tests_from_file[cmd].append(int(test_node.attrib['from-file']))
                     else:
-                        script_line = test_node.attrib['cmd'] + ' > $'#(' > %d' % test_id)
+                        script_line = test_node.attrib['cmd'] + ' > $'  # (' > %d' % test_id)
                         script += script_line + '\n'
                         print('Added "' + script_line + '" to script')
             for cmd in tests_from_file:
@@ -563,8 +577,8 @@ class ProblemSession:
                 script = ('%s > {%s}\n' % (cmd, tests_str)) + script
             if len(script) > 0:
                 try:
-                    self.send_api_request('problem.saveScript', {'testset' : testset_name,
-                                                                'source' : script})
+                    self.send_api_request('problem.saveScript', {'testset': testset_name,
+                                                                 'source': script})
                 except PolygonApiError as e:
                     print(e)
             test_id = 0
@@ -574,8 +588,8 @@ class ProblemSession:
                     group = test_node.attrib['group']
                     try:
                         print('Setting group %s for test %d' % (group, test_id))
-                        options = {'testset' : testset_name, 'testIndex' : str(test_id), 'testGroup' : group}
+                        options = {'testset': testset_name, 'testIndex': str(test_id), 'testGroup': group}
                         self.send_api_request('problem.saveTest', options)
                     except PolygonApiError as e:
                         print(e)
-            assert(test_id == int(testset_node.find('test-count').text))
+            assert (test_id == int(testset_node.find('test-count').text))
