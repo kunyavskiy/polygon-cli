@@ -12,6 +12,6 @@ def update_groups():
 def add_parser(subparsers):
     parser_update_groups = subparsers.add_parser(
             'update_groups',
-            help="Prints diff of local and polygon version of file"
+            help="Update groups for tests using script file"
     )
     parser_update_groups.set_defaults(func=lambda options: update_groups())
