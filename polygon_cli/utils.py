@@ -88,7 +88,7 @@ def parse_script_groups(content, hand_tests):
     test_id = 0
     any = False
     for i in filter(None, content.splitlines()):
-        match = re.search(rb"<#-- *group *(\d)* *-->", i)
+        match = re.search(rb"<#-- *group *(\d*) *-->", i)
         if not match:
             t = i.split(b'>')[-1].strip()
             if t == b'$':
