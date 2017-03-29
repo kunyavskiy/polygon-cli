@@ -18,7 +18,7 @@ def load_session():
         if os.path.exists(config.get_session_file_path()):
             session_data_json = open(config.get_session_file_path(), 'r').read()
         elif os.path.exists(os.path.join('..', config.get_session_file_path())):
-            config.internal_directory_path = os.path.join('..', config.internal_directory_path)
+            os.chdir('..')
             session_data_json = open(config.get_session_file_path(), 'r').read()
         else:
             return False
