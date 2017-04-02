@@ -509,8 +509,14 @@ class ProblemSession:
             test_id = 0
             script = ''
             tests_from_file = {}
+            groups = {}
             for test_node in testset_node.find('tests').findall('test'):
                 test_id += 1
+                if 'group' in test_node.attrib:
+                    group = test_node.attrib['group']
+                    if group not in groups:
+                        groups[group] = []
+                    groups[group].append(str(test_id))
                 if test_node.attrib['method'] == 'manual':
                     options = {}
                     options['checkExisting'] = 'true'
@@ -556,15 +562,7 @@ class ProblemSession:
                                                                  'source': script})
                 except PolygonApiError as e:
                     print(e)
-            test_id = 0
-            for test_node in testset_node.find('tests').findall('test'):
-                test_id += 1
-                if 'group' in test_node.attrib:
-                    group = test_node.attrib['group']
-                    try:
-                        print('Setting group %s for test %d' % (group, test_id))
-                        options = {'testset': testset_name, 'testIndex': str(test_id), 'testGroup': group}
-                        self.send_api_request('problem.saveTest', options)
-                    except PolygonApiError as e:
-                        print(e)
+            for group, tests in groups.items():
+                print('Setting group %s for tests %s' % (group, str(tests)))
+                self.set_test_group(tests, group)
             assert (test_id == int(testset_node.find('test-count').text))
