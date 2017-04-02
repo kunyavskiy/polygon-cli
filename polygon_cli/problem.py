@@ -277,7 +277,7 @@ class ProblemSession:
         """
         return self.get_files_list() + self.get_solutions_list()
 
-    def upload_file(self, name, type, content, is_new, tag=None):
+    def upload_file(self, name, type, content, is_new, tag=None, source_type=None):
         """
         Uploads new solution to polygon
 
@@ -289,10 +289,13 @@ class ProblemSession:
         :rtype: bool
         """
         options = {}
-        if name.endswith('.cpp'):
-            options['sourceType'] = 'cpp.g++11'
-        elif name.endswith('.java'):
-            options['sourceType'] = 'java8'
+        if source_type is None:
+            if name.endswith('.cpp'):
+                options['sourceType'] = 'cpp.g++11'
+            elif name.endswith('.java'):
+                options['sourceType'] = 'java8'
+        else:
+            options['sourceType'] = source_type
         if is_new:
             options['checkExisting'] = 'true'
         else:
@@ -444,23 +447,17 @@ class ProblemSession:
     def import_problem_from_package(self, directory):
         path_to_problemxml = os.path.join(directory, 'problem.xml')
 
-        def get_file_content_options(filepath):
-            options = {}
+        def upload_file_from_node(node, type, tag=None):
+            if node.find('source') is not None:
+                node = node.find('source')
+            is_executable = type != 'resource' and type != 'attachment'
+            filepath = os.path.join(directory, node.attrib['path'])
+            source_type = node.attrib['type'] if is_executable else None
             f = open(filepath, 'rb')
-            options['name'] = os.path.basename(f.name)
-            options['file'] = f.read()
+            content = f.read()
             f.close()
-            return options
-
-        def get_executable_options(node):
-            source_node = node.find('source')
-            if source_node.find('file') is not None:
-                source_node = source_node.find('file')
-            filepath = os.path.join(directory, source_node.attrib['path'])
-            options = get_file_content_options(filepath)
-            options['checkExisting'] = 'true'
-            options['sourceType'] = source_node.attrib['type']
-            return options
+            print('Adding ' + type + ': ' + filepath)
+            return self.upload_file(os.path.basename(filepath), type, content, True, tag, source_type)
 
         if os.path.isfile(path_to_problemxml):
             problem_node = ElementTree.parse(path_to_problemxml)
@@ -473,16 +470,10 @@ class ProblemSession:
                 print(tag_node.attrib['value'])
         assets_node = problem_node.find('assets')
         for solution_node in assets_node.find('solutions').findall('solution'):
-            options = get_executable_options(solution_node)
             xml_tag_to_api_tag = {'accepted': 'OK', 'main': 'MA', 'time-limit-exceeded': 'TL',
                                   'memory-limit-exceeded': 'ML', 'wrong-answer': 'WA',
-                                  'incorrect': 'RJ'}
-            options['tag'] = xml_tag_to_api_tag[solution_node.attrib['tag']]
-            try:
-                print('Adding solution: ' + options['name'])
-                self.send_api_request('problem.saveSolution', options)
-            except PolygonApiError as e:
-                print(e)
+                                  'incorrect': 'RJ', 'rejected' : 'RJ', 'time-limit-exceeded-or-accepted' : "TO"}
+            upload_file_from_node(solution_node, 'solution', xml_tag_to_api_tag[solution_node.attrib['tag']])
         files_node = problem_node.find('files')
         if files_node is not None:
             resources_node = files_node.find('resources')
@@ -492,43 +483,25 @@ class ProblemSession:
                     if filepath.endswith('testlib.h') or filepath.endswith('olymp.sty') or \
                             filepath.endswith('problem.tex') or filepath.endswith('statements.ftl'):
                         continue
-                    options = get_file_content_options(os.path.join(directory, filepath))
-                    options['type'] = 'resource'
-                    options['checkExisting'] = 'true'
-                    try:
-                        print('Adding resource: ' + options['name'])
-                        self.send_api_request('problem.saveFile', options)
-                    except PolygonApiError as e:
-                        print(e)
+                    upload_file_from_node(resource_node, 'resource')
+            attachments_node = files_node.find('attachments')
+            if attachments_node is not None:
+                for attachment_node in attachments_node.findall('file'):
+                    upload_file_from_node(attachment_node, 'attachment')
             executables_node = files_node.find('executables')
             if executables_node is not None:
                 for executable_node in executables_node.findall('executable'):
-                    options = get_executable_options(executable_node)
-                    options['type'] = 'source'
-                    try:
-                        print('Adding executable: ' + options['name'])
-                        self.send_api_request('problem.saveFile', options)
-                    except PolygonApiError as e:
-                        print(e)
+                    upload_file_from_node(executable_node, 'source')
         for checker_node in assets_node.findall('checker'):
             if 'name' in checker_node.attrib and checker_node.attrib['name'].startswith('std::'):
                 checker_name = checker_node.attrib['name']
             else:
                 checker_name = checker_node.find('copy').attrib['path']
-            try:
-                print('Setting checker: ' + checker_name)
-                self.send_api_request('problem.setChecker', {'checker': checker_name})
-            except PolygonApiError as e:
-                print(e)
+            self.set_utility_file(checker_name, 'checker')
         validators_node = assets_node.find('validators')
         if validators_node is not None:
             for validator_node in validators_node.findall('validator'):
-                validator_name = os.path.basename(validator_node.find('source').attrib['path'])
-                try:
-                    print('Setting validator: ' + validator_name)
-                    self.send_api_request('problem.setValidator', {'validator': validator_name})
-                except PolygonApiError as e:
-                    print(e)
+                self.set_utility_file(os.path.basename(validator_node.find('source').attrib['path']), 'validator')
         for testset_node in problem_node.find('judging').findall('testset'):
             testset_name = testset_node.attrib['name']
             input_pattern = testset_node.find('input-path-pattern').text
