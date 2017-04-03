@@ -7,6 +7,7 @@ def process_download_last_package():
     global_vars.problem.download_last_package()
     save_session()
 
+
 def add_parser(subparsers):
     parser_download_package = subparsers.add_parser(
             'download_package',
