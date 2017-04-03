@@ -74,6 +74,7 @@ class ExtractSessionParser(HTMLParser):
         if self.inCorrectSpan:
             self.session = data
 
+
 class PackageParser(HTMLParser):
     def __init__(self):
         super().__init__()
