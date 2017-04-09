@@ -3,9 +3,10 @@ import os.path
 
 
 def process_diff(options):
+    # resolve paths before load_session changes working directory
     input_files = list(map(os.path.abspath, options.file))
 
-    if not load_session():
+    if not load_session(verbose=options.verbose):
         fatal('No session known. Use init first.')
 
     polygon_files = global_vars.problem.get_all_files_list()

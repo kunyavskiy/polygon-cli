@@ -15,6 +15,15 @@ from .actions import update_groups as update_groups_action
 from .exceptions import PolygonNotLoginnedError
 
 parser = argparse.ArgumentParser(prog="polygon-cli")
+parser.add_argument('-v', '--verbose',
+                    action='store_true',
+                    dest='verbose',
+                    default=True,
+                    help='Verbose output')
+parser.add_argument('-nv', '--no-verbose',
+                    action='store_false',
+                    dest='verbose',
+                    help='Reduce output verbosity')
 subparsers = parser.add_subparsers(
         title='available subcommands',
         description='',

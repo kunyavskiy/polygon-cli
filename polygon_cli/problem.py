@@ -41,7 +41,7 @@ def parse_api_file_list(files, files_raw, type):
 
 
 class ProblemSession:
-    def __init__(self, address, problem_id):
+    def __init__(self, address, problem_id, verbose=True):
         """
 
         :type address: str
@@ -56,6 +56,7 @@ class ProblemSession:
         self.ccid = None
         self.local_files = []
         self.relogin_done = False
+        self.verbose = verbose
 
     def use_ready_session(self, data):
         """
@@ -146,8 +147,9 @@ class ProblemSession:
         return result
 
     def send_api_request(self, api_method, params, is_json=True, problem_data=True):
-        print('Invoking ' + api_method, end=' ')
-        sys.stdout.flush()
+        if self.verbose:
+            print('Invoking ' + api_method, end=' ')
+            sys.stdout.flush()
         params["apiKey"] = config.api_key
         params["time"] = int(time.time())
         if problem_data:
@@ -164,7 +166,10 @@ class ProblemSession:
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
         url = self.polygon_address + '/api/' + api_method
         result = self.session.request('POST', url, files=params)
-        print(result.status_code)
+        if self.verbose or result.status_code != 200:
+            if not self.verbose:
+                print('Invoking ' + api_method, end=' ')
+            print(result.status_code)
         if not is_json and result.status_code == 200:
             return result.content
         result = json.loads(result.content.decode('utf8'))
