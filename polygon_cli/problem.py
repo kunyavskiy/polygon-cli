@@ -352,6 +352,18 @@ class ProblemSession:
                 return local
         return None
 
+    def get_local_by_path(self, path):
+        """
+
+        :type path: str
+        :rtype: local_file.LocalFile or None
+        """
+        path = os.path.normpath(os.path.relpath(path, "."))
+        for local in self.local_files:
+            if os.path.normpath(local.get_path()) == path:
+                return local
+        return None
+
     def download_test(self, test_num, test_directory='.'):
         """
 

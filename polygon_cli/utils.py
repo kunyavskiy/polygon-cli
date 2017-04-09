@@ -3,9 +3,9 @@
 import os
 import re
 import shutil
-import string
 import sys
 from subprocess import Popen, PIPE
+import subprocess
 
 from . import config
 
@@ -18,7 +18,9 @@ def read_file(filename):
 
 
 def diff_files(old, our, theirs):
-    Popen(config.get_diff_tool(old, our, theirs), stdout=sys.stdout, shell=True)
+    subprocess.run(config.get_diff_tool(old, our, theirs),
+                   stdout=sys.stdout,
+                   shell=True)
 
 
 def safe_rewrite_file(path, content, openmode='wb'):
