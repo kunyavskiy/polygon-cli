@@ -30,6 +30,14 @@ def load_session(verbose=True):
         return False
 
 
+def get_session_options(options):
+    return {'verbose': options.verbose}
+
+
+def load_session_with_options(options):
+    return load_session(options.verbose)
+
+
 def save_session():
     session_data = global_vars.problem.dump_session()
     session_data_json = json.dumps(session_data, sort_keys=True, indent='  ', default=json_encoders.my_json_encoder)

@@ -20,7 +20,7 @@ parser.add_argument('-v', '--verbose',
                     dest='verbose',
                     default=True,
                     help='Verbose output')
-parser.add_argument('-nv', '--no-verbose',
+parser.add_argument('-V', '--no-verbose',
                     action='store_false',
                     dest='verbose',
                     help='Reduce output verbosity')

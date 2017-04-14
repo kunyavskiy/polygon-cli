@@ -6,8 +6,6 @@ from ..local_file import LocalFile
 
 
 def process_update(flat, to_update):
-    if not load_session():
-        fatal('No session known. Use init first.')
     files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for file in files:
@@ -46,7 +44,6 @@ def process_update(flat, to_update):
             global_vars.problem.local_files.append(local_file)
         table.add_row([file.type, file.name, local_file.get_path(), status])
     print(table)
-    save_session()
 
 
 def add_parser(subparsers):
@@ -56,4 +53,10 @@ def add_parser(subparsers):
     )
     parser_update.add_argument('--flat', action='store_true', help='Load files in current folder, not subdirectories')
     parser_update.add_argument('file', nargs='*', help='List of files to download (all by default)')
-    parser_update.set_defaults(func=lambda options: process_update(options.flat, options.file))
+
+    def process_options(options):
+        if not load_session_with_options(options):
+            fatal('No session known. Use init first.')
+        process_update(options.flat, options.file)
+        save_session()
+    parser_update.set_defaults(func=process_options)
