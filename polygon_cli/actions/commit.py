@@ -5,8 +5,6 @@ from .. import colors
 
 
 def process_commit(to_commit):
-    if not load_session():
-        fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.local_files
     polygon_files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
@@ -61,7 +59,6 @@ def process_commit(to_commit):
                 break
             table.add_row([file.type, file.polygon_filename, file.get_path(), status])
     print(table)
-    save_session()
 
 
 def add_parser(subparsers):
@@ -70,4 +67,10 @@ def add_parser(subparsers):
             help="Put all local changes to polygon. Not making a commit in polygon"
     )
     parser_commit.add_argument('file', nargs='*', help='List of files to commit')
-    parser_commit.set_defaults(func=lambda options: process_commit(options.file))
+
+    def read_options(options):
+        if not load_session_with_options(options):
+            fatal('No session known. Use relogin or init first.')
+        process_commit(options.file)
+        save_session()
+    parser_commit.set_defaults(func=read_options)

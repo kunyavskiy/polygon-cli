@@ -4,8 +4,6 @@ from .common import *
 
 
 def process_list():
-    if not load_session():
-        fatal('No session known. Use init first.')
     files = global_vars.problem.get_all_files_list()
     local_files = global_vars.problem.local_files
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Local name'])
@@ -22,7 +20,6 @@ def process_list():
             continue
         table.add_row([file.type, '!' + file.polygon_filename, file.get_path(), file.name])
     print(table)
-    save_session()
 
 
 def add_parser(subparsers):
@@ -30,4 +27,10 @@ def add_parser(subparsers):
             'list',
             help="List files in polygon"
     )
-    parser_list.set_defaults(func=lambda options: process_list())
+
+    def read_options(options):
+        if not load_session_with_options(options):
+            fatal('No session known. Use init first.')
+        process_list()
+        save_session()
+    parser_list.set_defaults(func=read_options)
