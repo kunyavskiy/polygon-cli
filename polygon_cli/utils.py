@@ -84,12 +84,17 @@ def get_local_solutions():
     return os.listdir(config.solutions_path)
 
 
+def need_update_groups(content):
+    match = re.search(rb"<#-- *group *(\d*) *-->", content)
+    return match is not None
+
+
 def parse_script_groups(content, hand_tests):
     groups = {"0": []}
     cur_group = "0"
     test_id = 0
     any = False
-    for i in filter(None, content.splitlines()):
+    for i in filter(lambda x: x.strip(), content.splitlines()):
         match = re.search(rb"<#-- *group *(\d*) *-->", i)
         if not match:
             t = i.split(b'>')[-1].strip()

@@ -416,6 +416,8 @@ class ProblemSession:
         except PolygonApiError as e:
             print(e)
             return False
+        if not utils.need_update_groups(content):
+            return True
         return self.update_groups(content)
 
     def set_test_group(self, tests, group):
