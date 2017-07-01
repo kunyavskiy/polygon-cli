@@ -529,6 +529,7 @@ class ProblemSession:
             script = ''
             tests_from_file = {}
             groups = {}
+            script_tests_in_statements = []
             for test_node in testset_node.find('tests').findall('test'):
                 test_id += 1
                 if 'group' in test_node.attrib:
@@ -552,6 +553,8 @@ class ProblemSession:
                     except PolygonApiError as e:
                         print(e)
                 else:
+                    if 'sample' in test_node.attrib and test_node.attrib['sample'] == 'true':
+                        script_tests_in_statements.append(test_id)
                     if 'from-file' in test_node.attrib:
                         cmd = test_node.attrib['cmd']
                         if not cmd in tests_from_file:
@@ -579,6 +582,14 @@ class ProblemSession:
                 try:
                     self.send_api_request('problem.saveScript', {'testset': testset_name,
                                                                  'source': script})
+                except PolygonApiError as e:
+                    print(e)
+            for test in script_tests_in_statements:
+                try:
+                    self.send_api_request('problem.saveTest', {'testset': testset_name,
+                                                               'checkExisting': 'false',
+                                                               'testIndex' : str(test),
+                                                               'testUseInStatements' : 'true'})
                 except PolygonApiError as e:
                     print(e)
             for group, tests in groups.items():
