@@ -420,6 +420,32 @@ class ProblemSession:
             return True
         return self.update_groups(content)
 
+    def update_info(self, inputfile, outputfile, timelimit, memorylimit, interactive):
+        """
+        Updates problem info
+        :param inputfile: input file name or None if no update required
+        :param outputfile: output file name or None if no update required
+        :param timelimit: timelimit in milliseconds or None if no update required
+        :param memorylimit: memorylimit in MB or None if no update required
+        :param interactive: boolean, if problem is interactive, or None if no update required
+        :returns boolean, if updated
+        """
+        options = {}
+        def add_option(name, value):
+            if value is not None:
+                options[name] = value
+        add_option('inputFile', inputfile)
+        add_option('outputFile', outputfile)
+        add_option('timeLimit', timelimit)
+        add_option('memoryLimit', memorylimit)
+        add_option('interactive', interactive)
+        try:
+            self.send_api_request('problem.updateInfo', options)
+        except PolygonApiError as e:
+            print(e)
+            return False
+        return True
+
     def set_test_group(self, tests, group):
         for i in tests:
             self.send_api_request('problem.saveTest', {'testset': 'tests', 'testIndex': i, 'testGroup': group})
@@ -483,6 +509,18 @@ class ProblemSession:
         else:
             print("problem.xml not found or couldn't be opened")
             return
+        judging_node = problem_node.find('judging')
+        if judging_node is not None:
+            input_file_name = judging_node.attrib['input-file']
+            output_file_name = judging_node.attrib['output-file']
+            if input_file_name == "":
+                input_file_name = "stdin"
+            if output_file_name == "":
+                output_file_name = "stdout"
+            any_testset = judging_node.find('testset')
+            time_limit = int(any_testset.find('time-limit').text)
+            memory_limit = int(any_testset.find('memory-limit').text) // 2**20
+            self.update_info(input_file_name, output_file_name, time_limit, memory_limit, None)
         if problem_node.find('tags') is not None:  # need API function to add tags
             print('tags:')
             for tag_node in problem_node.find('tags').findall('tag'):
