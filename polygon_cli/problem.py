@@ -294,13 +294,14 @@ class ProblemSession:
         :rtype: bool
         """
         options = {}
-        if source_type is None:
-            if name.endswith('.cpp') or name.endswith('.c++'):
-                options['sourceType'] = 'cpp.g++11'
-            elif name.endswith('.java'):
-                options['sourceType'] = 'java8'
-        else:
-            options['sourceType'] = source_type
+        if type != 'resource':
+            if source_type is None:
+                if name.endswith('.cpp') or name.endswith('.c++'):
+                    options['sourceType'] = 'cpp.g++11'
+                elif name.endswith('.java'):
+                    options['sourceType'] = 'java8'
+            else:
+                options['sourceType'] = source_type
         if is_new:
             options['checkExisting'] = 'true'
         else:
