@@ -9,6 +9,11 @@ class PolygonFile:
         self.type = None
         self.date = None
         self.size = None
+        self.content = None
+
+    @staticmethod
+    def to_byte(value, encoding):
+        return value.encode(encoding=encoding) if encoding else value.encode()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -27,6 +32,16 @@ class PolygonFile:
             file_text = global_vars.problem.load_script()
         elif self.type == 'solution':
             file_text = global_vars.problem.send_api_request('problem.viewSolution', {'name': self.name}, False)
+        elif self.type == 'statement':
+            if self.content is not None:
+                file_text = self.content
+            else:
+                data = global_vars.problem.send_api_request('problem.statements', {})
+                lang, name = self.name.split('/')
+                data = data.get(lang, {})
+                encoding = data.get('encoding', None)
+                content = data.get(name, None)
+                file_text = PolygonFile.to_byte(content, encoding)
         else:
             file_text = global_vars.problem.send_api_request('problem.viewFile',
                                                              {'name': self.name,

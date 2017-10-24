@@ -275,12 +275,30 @@ class ProblemSession:
         files.append(script)
         return files
 
+    def get_statements_list(self):
+        """
+
+        :rtype: list of polygon_file.PolygonFile
+        """
+        statements_raw = self.send_api_request('problem.statements', {})
+        files = []
+        for lang, files_raw in statements_raw.items():
+            encoding = files_raw.get('encoding', None)
+            for name, content in files_raw.items():
+                file = polygon_file.PolygonFile()
+                file.type = 'statement'
+                file.name = '%s/%s' % (lang, name)
+                file.content = polygon_file.PolygonFile.to_byte(content, encoding)
+                file.size = len(content)
+                files.append(file)
+        return files
+
     def get_all_files_list(self):
         """
 
         :rtype: list of polygon_file.PolygonFile
         """
-        return self.get_files_list() + self.get_solutions_list()
+        return self.get_files_list() + self.get_solutions_list() + self.get_statements_list()
 
     def upload_file(self, name, type, content, is_new, tag=None, source_type=None):
         """
@@ -300,6 +318,8 @@ class ProblemSession:
                     options['sourceType'] = 'cpp.g++11'
                 elif name.endswith('.java'):
                     options['sourceType'] = 'java8'
+                elif name.endswith('.pas'):
+                    options['sourceType'] = 'pas.fpc'
             else:
                 options['sourceType'] = source_type
         if is_new:
@@ -320,6 +340,20 @@ class ProblemSession:
         options['file'] = content
         try:
             self.send_api_request(api_method, options)
+        except PolygonApiError as e:
+            print(e)
+            return False
+
+        return True
+
+    def upload_statement(self, name, content):
+        lang, name = name.split('/')
+        options = {
+            'lang': lang,
+            name: content,
+        }
+        try:
+            self.send_api_request('problem.saveStatement', options)
         except PolygonApiError as e:
             print(e)
             return False

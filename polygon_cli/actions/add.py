@@ -18,16 +18,17 @@ def process_add(file_type, solution_type, files):
             solution_type = 'MA'
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
     for filename in files:
-        local = global_vars.problem.get_local_by_filename(os.path.basename(filename))
+        local_file = LocalFile(os.path.basename(filename),
+                               os.path.dirname(filename),
+                               str(os.path.basename(filename).split('.')[0]),
+                               file_type
+                               )
+        local = global_vars.problem.get_local_by_filename(local_file.filename)
         if local is not None:
-            print('file %s already added, use commit instead' % os.path.basename(filename))
+            print('file %s already added, use commit instead' % local.filename)
             status = colors.warning('Already added')
         else:
-            local = LocalFile(os.path.basename(filename),
-                              os.path.dirname(filename),
-                              str(os.path.basename(filename).split('.')[0]),
-                              file_type
-                              )
+            local = local_file
             if solution_type is not None:
                 local.tag = solution_type
             if local.upload():
@@ -37,7 +38,7 @@ def process_add(file_type, solution_type, files):
                     global_vars.problem.set_utility_file(local.polygon_filename, real_file_type)
             else:
                 status = colors.error('Error')
-        table.add_row([local.type, local.polygon_filename, local.filename, status])
+        table.add_row([local.type, local.polygon_filename, local.get_path(), status])
     print(table)
 
 
@@ -47,7 +48,7 @@ def add_parser(subparsers):
             help="Upload files to polygon"
     )
     parser_add.add_argument('file_type', choices=['solution', 'resource', 'source', 'attachment', 'checker',
-                                                  'validator', 'interactor'],
+                                                  'validator', 'interactor', 'statement'],
                             help='Type of file to add')
     parser_add.add_argument('-t', dest='solution_type',
                             choices=['MAIN', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE', 'TO'],
