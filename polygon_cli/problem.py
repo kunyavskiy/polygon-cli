@@ -526,9 +526,14 @@ class ProblemSession:
         f.close()
 
     def save_statement_from_file(self, filepath, encoding, language, set_limits=False):
+        existing_statements = self.send_api_request('problem.statements', {})
+        if existing_statements and language in existing_statements:
+            print('Statement of language %s already exists' % language)
+            return False
         statement_file = open(filepath, 'r', encoding=encoding)
         options = {'lang': language, 'encoding': 'UTF-8'}
         content = statement_file.read()
+        statement_file.close()
         options['name'] = content[len('\\begin{problem}{'):content.find('}', len('\\begin{problem}{'))]
         if set_limits:
             tl = None
