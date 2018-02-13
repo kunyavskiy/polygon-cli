@@ -316,7 +316,7 @@ class ProblemSession:
         if type != 'resource':
             if source_type is None:
                 if name.endswith('.cpp') or name.endswith('.c++'):
-                    options['sourceType'] = 'cpp.g++11'
+                    options['sourceType'] = 'cpp.g++17'
                 elif name.endswith('.java'):
                     options['sourceType'] = 'java8'
                 elif name.endswith('.pas'):
