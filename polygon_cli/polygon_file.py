@@ -1,4 +1,6 @@
+from . import config
 from . import global_vars
+from . import utils
 
 
 class PolygonFile:
@@ -7,9 +9,11 @@ class PolygonFile:
         self.type = None
         self.date = None
         self.size = None
-        self.remove_link = None
-        self.download_link = None
-        self.edit_link = None
+        self.content = None
+
+    @staticmethod
+    def to_byte(value, encoding):
+        return value.encode(encoding=encoding) if encoding else value.encode()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -19,29 +23,32 @@ class PolygonFile:
             if key != '__type':
                 setattr(self, key, data[key])
 
-    def normalize(self, session):
-        """
-
-        :type session: problem.ProblemSession
-        """
-        assert self.remove_link
-        assert self.download_link
-        assert self.edit_link
-        self.remove_link = session.make_link(self.remove_link, ssid=True)
-        self.download_link = session.make_link(self.download_link, ssid=True)
-        self.edit_link = session.make_link(self.edit_link, ssid=True)
-
     def get_content(self):
         """
 
-        :rtype: str
+        :rtype: bytes
         """
-        file_text = global_vars.problem.send_request('GET', self.download_link).text
+        if self.type == 'script':
+            file_text = global_vars.problem.load_script()
+        elif self.type == 'solution':
+            file_text = global_vars.problem.send_api_request('problem.viewSolution', {'name': self.name}, False)
+        elif self.type == 'statement':
+            if self.content is not None:
+                file_text = self.content
+            else:
+                data = global_vars.problem.send_api_request('problem.statements', {})
+                lang, name = self.name.split('/')
+                data = data.get(lang, {})
+                encoding = data.get('encoding', None)
+                content = data.get(name, None)
+                file_text = PolygonFile.to_byte(content, encoding)
+        else:
+            file_text = global_vars.problem.send_api_request('problem.viewFile',
+                                                             {'name': self.name,
+                                                              'type': utils.get_api_file_type(self.type)}, False)
         return file_text
 
     def get_default_local_dir(self):
-        if self.type == 'solution':
-            return 'solutions'
-        if self.type == 'source':
-            return 'src'
+        if self.type in list(config.subdirectory_paths.keys()):
+            return config.subdirectory_paths[self.type]
         raise NotImplementedError("loading files of type %s" % self.type)

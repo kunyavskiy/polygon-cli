@@ -6,7 +6,7 @@ from . import utils
 
 
 class LocalFile:
-    def __init__(self, filename=None, dir=None, name=None, type=None, polygon_filename=None):
+    def __init__(self, filename=None, dir=None, name=None, type=None, polygon_filename=None, tag=None):
         """
 
         :type filename: str or None
@@ -14,12 +14,24 @@ class LocalFile:
         :type name: str or None
         :type type: str or None
         :type polygon_filename: str or None
+        :type tag: str or None
         """
+
+        if type == 'statement':
+            assert filename is not None
+            assert dir is not None
+            assert name is not None
+            lang = os.path.basename(dir)
+            dir = os.path.dirname(dir)
+            filename = lang + '/' + filename
+            name = lang + '/' + name
+
         self.filename = filename
         self.dir = dir
         self.name = name
         self.type = type
         self.polygon_filename = polygon_filename
+        self.tag = tag
 
     def __repr__(self):
         return str(self.__dict__)
@@ -45,16 +57,15 @@ class LocalFile:
 
     def upload(self):
         assert self.polygon_filename is None
-        content = open(self.get_path(), 'r').read()
-        if self.type == 'solution':
-            prefix = 'solutions'
-            url = 'solutions'
-        elif self.type == 'source':
-            prefix = 'source'
-            url = 'files'
-        else:
-            raise NotImplementedError("uploading solution of type " + self.type)
-        if not global_vars.problem.upload_file(self.filename, prefix, url, content):
+        file = open(self.get_path(), 'rb')
+        content = file.read()
+        if self.type == 'script':
+            if not global_vars.problem.upload_script(content):
+                return False
+        elif self.type == 'statement':
+            if not global_vars.problem.upload_statement(self.filename, content):
+                return False
+        elif not global_vars.problem.upload_file(self.filename, self.type, content, True, self.tag):
             return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
         self.polygon_filename = self.filename
@@ -62,8 +73,15 @@ class LocalFile:
 
     def update(self):
         assert self.polygon_filename is not None
-        content = open(self.get_path(), 'r').read()
-        if not global_vars.problem.edit_file(self.filename, self.type, content):
+        file = open(self.get_path(), 'rb')
+        content = file.read()
+        if self.type == 'script':
+            if not global_vars.problem.upload_script(content):
+                return False
+        elif self.type == 'statement':
+            if not global_vars.problem.upload_statement(self.filename, content):
+                return False
+        elif not global_vars.problem.upload_file(self.filename, self.type, content, False):
             return False
         utils.safe_rewrite_file(self.get_internal_path(), content)
         return True

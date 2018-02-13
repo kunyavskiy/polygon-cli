@@ -13,21 +13,29 @@ def fatal(error):
     exit(0)
 
 
-def load_session():
+def load_session(verbose=True):
     try:
         if os.path.exists(config.get_session_file_path()):
             session_data_json = open(config.get_session_file_path(), 'r').read()
         elif os.path.exists(os.path.join('..', config.get_session_file_path())):
-            config.internal_directory_path = os.path.join('..', config.internal_directory_path)
+            os.chdir('..')
             session_data_json = open(config.get_session_file_path(), 'r').read()
         else:
             return False
         session_data = json.loads(session_data_json, object_hook=json_encoders.my_json_decoder)
-        global_vars.problem = ProblemSession(config.polygon_url, session_data["problemId"])
+        global_vars.problem = ProblemSession(config.polygon_url, session_data["problemId"], verbose=verbose)
         global_vars.problem.use_ready_session(session_data)
         return True
     except:
         return False
+
+
+def get_session_options(options):
+    return {'verbose': options.verbose}
+
+
+def load_session_with_options(options):
+    return load_session(options.verbose)
 
 
 def save_session():

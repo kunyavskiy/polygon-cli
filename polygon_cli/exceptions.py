@@ -4,3 +4,7 @@ class ProblemNotFoundError(Exception):
 
 class PolygonNotLoginnedError(Exception):
     pass
+
+
+class PolygonApiError(Exception):
+    pass

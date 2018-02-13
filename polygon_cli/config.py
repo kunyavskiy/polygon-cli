@@ -1,10 +1,23 @@
 import os
 
 polygon_url = "https://polygon.codeforces.com"
+# change this before installation
+# login and password will be used for non-api queries, you may leave them None
+# WARNING: this will be stored in plain-text on your computer in Python scripts directory
 login = None
 password = None
+api_key = None
+api_secret = None
 internal_directory_path = '.polygon-cli'
-solutions_path = 'solutions'
+subdirectory_paths = {
+    'attachment': 'src',
+    'resource': 'src',
+    'solution': 'solutions',
+    'source': 'src',
+    'script': '',
+    'test' : 'tests',
+    'statement': 'statements',
+}
 sessionFile = 'session.json'
 
 
@@ -13,11 +26,11 @@ def get_session_file_path():
 
 
 def get_solution_path(solution):
-    return os.path.join(solutions_path, solution)
+    return os.path.join(subdirectory_paths['solutions'], solution)
 
 
 def get_download_solution_path(solution):
-    return os.path.join(internal_directory_path, solutions_path, solution)
+    return os.path.join(internal_directory_path, subdirectory_paths['solutions'], solution)
 
 
 def get_merge_tool(old, our, theirs):

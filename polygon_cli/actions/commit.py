@@ -5,8 +5,6 @@ from .. import colors
 
 
 def process_commit(to_commit):
-    if not load_session() or global_vars.problem.sessionId is None:
-        fatal('No session known. Use relogin or init first.')
     files = global_vars.problem.local_files
     polygon_files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
@@ -39,7 +37,7 @@ def process_commit(to_commit):
             status = ''
             while True:
                 try:
-                    old_text = open(old_path, 'r').read()
+                    old_text = open(old_path, 'rb').read()
                 except IOError:
                     status = colors.warning('Outdated')
                     print('file %s is outdated: update first' % file.name)
@@ -48,7 +46,7 @@ def process_commit(to_commit):
                     status = colors.warning('Outdated')
                     print('file %s is outdated: update first' % file.name)
                     break
-                new_text = open(file.get_path(), 'r').read()
+                new_text = open(file.get_path(), 'rb').read()
                 if polygon_text.splitlines() == new_text.splitlines():
                     status = colors.info('Not changed')
                     print('file %s not changed' % file.name)
@@ -61,7 +59,6 @@ def process_commit(to_commit):
                 break
             table.add_row([file.type, file.polygon_filename, file.get_path(), status])
     print(table)
-    save_session()
 
 
 def add_parser(subparsers):
@@ -70,4 +67,10 @@ def add_parser(subparsers):
             help="Put all local changes to polygon. Not making a commit in polygon"
     )
     parser_commit.add_argument('file', nargs='*', help='List of files to commit')
-    parser_commit.set_defaults(func=lambda options: process_commit(options.file))
+
+    def read_options(options):
+        if not load_session_with_options(options):
+            fatal('No session known. Use relogin or init first.')
+        process_commit(options.file)
+        save_session()
+    parser_commit.set_defaults(func=read_options)
