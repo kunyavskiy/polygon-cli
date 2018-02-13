@@ -9,6 +9,13 @@ password = None
 api_key = None
 api_secret = None
 internal_directory_path = '.polygon-cli'
+default_source_types = {
+    '.cpp': 'cpp.g++17',
+    '.c++': 'cpp.g++17',
+    '.py': 'python.3',
+    '.java': 'java8',
+    '.pas': 'pas.fpc',
+}
 subdirectory_paths = {
     'attachment': 'src',
     'resource': 'src',
