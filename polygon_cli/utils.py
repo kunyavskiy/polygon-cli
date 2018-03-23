@@ -7,6 +7,7 @@ import sys
 from subprocess import Popen, PIPE
 import subprocess
 
+from . import freemarker_parsers
 from . import config
 
 
@@ -94,10 +95,42 @@ def parse_script_groups(content, hand_tests):
     cur_group = "0"
     test_id = 0
     any = False
+    script = []
     for i in filter(lambda x: x.strip(), content.splitlines()):
         match = re.search(rb"<#-- *group *(\d*) *-->", i)
         if not match:
+            match_freemarker_single_tag = re.search(rb"<#(\w*)(.*)/>", i)
+            if match_freemarker_single_tag:
+                script.append(["single_tag", match_freemarker_single_tag.groups()])
+                continue
+
+            match_freemarker_opening_tag = re.search(rb"<#(\w*)(.*)>", i)
+            if match_freemarker_opening_tag:
+                script.append(["opening_tag", match_freemarker_opening_tag.groups()])
+                continue
+
+            match_freemarker_closing_tag = re.search(rb"</#(\w*)(.*)>", i)
+            if match_freemarker_closing_tag:
+                tmp = match_freemarker_closing_tag.groups();
+                assert tmp[1].decode("ascii").strip() == "", "strange closing tag \"" + i + "\""
+                script.append(["closing_tag", tmp[0]])
+                continue
+
             t = i.split(b'>')[-1].strip()
+            script.append(["test", t])
+        else:
+            script.append(["group", match.groups(0)[0].decode("ascii")])
+            any = True
+        
+    if not any:
+        return None
+    
+    pos = 0
+    stack_cycles = []
+    variables = dict()
+    while pos < len(script):
+        if script[pos][0] == "test":
+            t = script[pos][1]
             if t == b'$':
                 test_id += 1
                 while test_id in hand_tests:
@@ -106,12 +139,32 @@ def parse_script_groups(content, hand_tests):
                 test_id = int(t)
                 assert test_id not in hand_tests
             groups[cur_group].append(test_id)
-            continue
-        cur_group = match.groups(0)[0].decode("ascii")
-        groups[cur_group] = []
-        any = True
-    if not any:
-        return None
+        elif script[pos][0] == "group":
+            cur_group = script[pos][1]
+            groups[cur_group] = []
+        elif script[pos][0] == "single_tag":
+            if script[pos][1][0] == rb"assign":
+                name, val = freemarker_parsers.parse_freemarker_assign_expr(script[pos][1][1], variables)
+                variables[name] = val
+        elif script[pos][0] == "opening_tag":
+            if script[pos][1][0] == rb"list":
+                name, values = freemarker_parsers.parse_freemarker_list_as(script[pos][1][1], variables)
+                variables[name] = values[0]
+                stack_cycles.append([name, values[1:], pos])
+            elif script[pos][1][0] == rb"assign":
+                name, val = freemarker_parsers.parse_freemarker_assign_expr(script[pos][1][1], variables)
+                variables[name] = val
+        elif script[pos][0] == "closing_tag":
+            if script[pos][1] == rb"list":
+                if len(stack_cycles[-1][1]):
+                    variables[stack_cycles[-1][0]] = stack_cycles[-1][1][0]
+                    stack_cycles[-1][1] = stack_cycles[-1][1][1:]
+                    pos = stack_cycles[-1][2]
+                else:
+                    stack_cycles.pop()
+
+        pos += 1
+
     return groups
 
 
