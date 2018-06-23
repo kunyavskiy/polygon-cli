@@ -601,9 +601,26 @@ class ProblemSession:
             memory_limit = int(any_testset.find('memory-limit').text) // 2**20
             self.update_info(input_file_name, output_file_name, time_limit, memory_limit, None)
         if problem_node.find('tags') is not None:  # need API function to add tags
-            print('tags:')
+            tags = []
             for tag_node in problem_node.find('tags').findall('tag'):
-                print(tag_node.attrib['value'])
+                tags.append(tag_node.attrib['value'])
+            print('tags:', tags)
+            self.send_api_request('problem.saveTags', {'tags': ','.join(tags)})
+        if problem_node.find('documents') is not None:
+            for document_node in problem_node.find('documents').findall('document'):
+                document_path = os.path.join(directory, document_node.attrib['path'])
+                if os.path.basename(document_path) == 'description.txt':
+                    with open(document_path, 'r') as document_file:
+                        description_content = self.send_api_request('problem.viewGeneralDescription', {})
+                        if description_content == '':
+                            description_content = document_file.read()
+                            self.send_api_request('problem.saveGeneralDescription', {'description': description_content})
+                if os.path.basename(document_path) == 'tutorial.txt':
+                    with open(document_path, 'r') as document_file:
+                        tutorial_content = self.send_api_request('problem.viewGeneralTutorial', {})
+                        if tutorial_content == '':
+                            tutorial_content = document_file.read()
+                            self.send_api_request('problem.saveGeneralTutorial', {'tutorial': tutorial_content})
         for statement_node in problem_node.find('statements').findall('statement'):
             if not statement_node.attrib['type'].endswith('tex'):
                 continue
