@@ -12,6 +12,7 @@ from .actions import update as update_action
 from .actions import package as download_package_action
 from .actions import import_package as import_package_action
 from .actions import update_groups as update_groups_action
+from .actions import update_info as update_info_action
 from .exceptions import PolygonNotLoginnedError
 
 parser = argparse.ArgumentParser(prog="polygon-cli")
@@ -43,6 +44,7 @@ get_test_action.add_parser(subparsers)
 download_package_action.add_parser(subparsers)
 import_package_action.add_parser(subparsers)
 update_groups_action.add_parser(subparsers)
+update_info_action.add_parser(subparsers)
 
 
 def main():
