@@ -453,7 +453,7 @@ class ProblemSession:
             return True
         return self.update_groups(content)
 
-    def update_info(self, inputfile, outputfile, timelimit, memorylimit, interactive):
+    def update_info(self, inputfile=None, outputfile=None, timelimit=None, memorylimit=None, interactive=None):
         """
         Updates problem info
         :param inputfile: input file name or None if no update required
