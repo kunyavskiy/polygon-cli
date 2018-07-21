@@ -58,6 +58,8 @@ class ProblemSession:
         self.local_files = []
         self.relogin_done = False
         self.verbose = verbose
+        self.scores_enabled = False
+        self.groups_enabled = set()
 
     def use_ready_session(self, data):
         """
@@ -426,6 +428,7 @@ class ProblemSession:
         return self.send_api_request('problem.script', {'testset': 'tests'}, is_json=False)
 
     def update_groups(self, script_content):
+        self.ensure_groups_enabled('tests')
         tests = self.get_tests()
         hand_tests = self.get_hand_tests_list(tests)
         groups, scores = utils.parse_script_groups(script_content, hand_tests)
@@ -438,6 +441,7 @@ class ProblemSession:
                     print('Set group ' + str(i) + ' for tests ' + str(bad_current_groups))
                 self.set_test_group(bad_current_groups, i)
                 if scores[i] is not None:
+                    self.ensure_scores_enabled()
                     need_score_test = groups[i][0]
                     for t in groups[i]:
                         score = test_score[t]
@@ -750,10 +754,22 @@ class ProblemSession:
                 except PolygonApiError as e:
                     print(e)
             if len(groups) > 0:
-                if self.send_api_request('problem.enableGroups',
-                                         {'testset': testset_name, 'enable': 'true'}, is_json=False) is None:
-                    print("Couldn't enable groups for testset %s" % testset_name)
+                self.ensure_groups_enabled(testset_name)
             for group, tests in groups.items():
                 print('Setting group %s for tests %s' % (group, str(tests)))
                 self.set_test_group(tests, group)
             assert (test_id == int(testset_node.find('test-count').text))
+
+    def ensure_groups_enabled(self, testset_name):
+        if testset_name not in self.groups_enabled:
+            self.groups_enabled.add(testset_name)
+            if self.send_api_request('problem.enableGroups',
+                                     {'testset': testset_name, 'enable': 'true'}, is_json=False) is None:
+                print("Couldn't enable groups for testset %s" % testset_name)
+
+    def ensure_scores_enabled(self):
+        if not self.scores_enabled:
+            self.scores_enabled = True
+            if self.send_api_request('problem.enablePoints',
+                                 {'enable': 'true'}, is_json=False) is None:
+                print("Couldn't enable scores for problem")
