@@ -428,14 +428,25 @@ class ProblemSession:
     def update_groups(self, script_content):
         tests = self.get_tests()
         hand_tests = self.get_hand_tests_list(tests)
-        groups = utils.parse_script_groups(script_content, hand_tests)
+        groups, scores = utils.parse_script_groups(script_content, hand_tests)
         test_group = {i["index"]: i["group"] if "group" in i else None for i in tests}
+        test_score = {i["index"]: i["points"] if "points" in i else 0.0 for i in tests}
         if groups:
             for i in groups.keys():
                 bad_current_groups = list(filter(lambda x: test_group[x] != i, groups[i]))
                 if bad_current_groups:
                     print('Set group ' + str(i) + ' for tests ' + str(bad_current_groups))
                 self.set_test_group(bad_current_groups, i)
+                if scores[i] is not None:
+                    need_score_test = groups[i][0]
+                    for t in groups[i]:
+                        score = test_score[t]
+                        need_score = scores[i] if t == need_score_test else 0.0
+                        if score != need_score:
+                            if bad_current_groups:
+                                print('Set score ' + str(need_score) + ' for test ' + str(t))
+                            self.set_test_score(t, i, need_score)
+
         return True
 
     def upload_script(self, content):
@@ -482,6 +493,13 @@ class ProblemSession:
     def set_test_group(self, tests, group):
         for i in tests:
             self.send_api_request('problem.saveTest', {'testset': 'tests', 'testIndex': i, 'testGroup': group})
+
+    def set_test_score(self, test, group, score):
+        data = {'testset': 'tests', 'testIndex': test, 'testGroup': group, 'testPoints': score}
+        if score is None:
+            del data['testPoints']
+        self.send_api_request('problem.saveTest', data)
+
 
     def get_tests(self):
         return self.send_api_request('problem.tests', {'testset': 'tests'})

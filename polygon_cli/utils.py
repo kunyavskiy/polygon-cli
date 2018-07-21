@@ -86,18 +86,19 @@ def get_local_solutions():
 
 
 def need_update_groups(content):
-    match = re.search(rb"<#-- *group *(\d*) *-->", content)
+    match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *-->", content)
     return match is not None
 
 
 def parse_script_groups(content, hand_tests):
     groups = {"0": []}
+    scores = {"0": None}
     cur_group = "0"
     test_id = 0
     any = False
     script = []
     for i in filter(lambda x: x.strip(), content.splitlines()):
-        match = re.search(rb"<#-- *group *(\d*) *-->", i)
+        match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *-->", i)
         if not match:
             match_freemarker_single_tag = re.search(rb"<#(\w*)(.*)/>", i)
             if match_freemarker_single_tag:
@@ -111,7 +112,7 @@ def parse_script_groups(content, hand_tests):
 
             match_freemarker_closing_tag = re.search(rb"</#(\w*)(.*)>", i)
             if match_freemarker_closing_tag:
-                tmp = match_freemarker_closing_tag.groups();
+                tmp = match_freemarker_closing_tag.groups()
                 assert tmp[1].decode("ascii").strip() == "", "strange closing tag \"" + i + "\""
                 script.append(["closing_tag", tmp[0]])
                 continue
@@ -119,7 +120,7 @@ def parse_script_groups(content, hand_tests):
             t = i.split(b'>')[-1].strip()
             script.append(["test", t])
         else:
-            script.append(["group", match.groups(0)[0].decode("ascii")])
+            script.append(["group", match.group(1).decode("ascii"), match.group(3)])
             any = True
         
     if not any:
@@ -142,6 +143,7 @@ def parse_script_groups(content, hand_tests):
         elif script[pos][0] == "group":
             cur_group = script[pos][1]
             groups[cur_group] = []
+            scores[cur_group] = int(script[pos][2].decode("ascii")) if script[pos][2] else None
         elif script[pos][0] == "single_tag":
             if script[pos][1][0] == rb"assign":
                 name, val = freemarker_parsers.parse_freemarker_assign_expr(script[pos][1][1], variables)
@@ -165,7 +167,7 @@ def parse_script_groups(content, hand_tests):
 
         pos += 1
 
-    return groups
+    return groups, scores
 
 
 def convert_to_bytes(x):
