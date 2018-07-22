@@ -445,11 +445,14 @@ class ProblemSession:
                     need_score_test = groups[i][0]
                     for t in groups[i]:
                         score = test_score[t]
-                        need_score = scores[i] if t == need_score_test else 0.0
+                        need_score = scores[i]["score"] if t == need_score_test else 0.0
                         if score != need_score:
                             if bad_current_groups:
                                 print('Set score ' + str(need_score) + ' for test ' + str(t))
                             self.set_test_score(t, i, need_score)
+            for i in groups.keys():
+                if scores[i] is not None and scores[i]["depends"] is not None:
+                    self.set_test_group_deps(i, scores[i]["depends"])
 
         return True
 
@@ -479,9 +482,11 @@ class ProblemSession:
         :returns boolean, if updated
         """
         options = {}
+
         def add_option(name, value):
             if value is not None:
                 options[name] = value
+
         add_option('inputFile', inputfile)
         add_option('outputFile', outputfile)
         add_option('timeLimit', timelimit)
@@ -503,7 +508,6 @@ class ProblemSession:
         if score is None:
             del data['testPoints']
         self.send_api_request('problem.saveTest', data)
-
 
     def get_tests(self):
         return self.send_api_request('problem.tests', {'testset': 'tests'})
@@ -561,12 +565,12 @@ class ProblemSession:
             if match is not None:
                 tl = match.group(1)
                 print('Found TL = {} seconds'.format(tl))
-                tl = int(float(tl) * 1000) # seconds to ms
+                tl = int(float(tl) * 1000)  # seconds to ms
             match = re.search("{\s*(\d+)\s+[MmмМ][^}]*}", content)
             if match is not None:
                 ml = match.group(1)
                 print('Found ML = {} mebibytes'.format(ml))
-                ml = int(ml) # bytes to
+                ml = int(ml)  # bytes to
             self.update_info(None, None, tl, ml, None)
         content = content[content.find('\n') + 1:]
         input_format_start = content.find('\\InputFile')
@@ -620,7 +624,7 @@ class ProblemSession:
                 output_file_name = "stdout"
             any_testset = judging_node.find('testset')
             time_limit = int(any_testset.find('time-limit').text)
-            memory_limit = int(any_testset.find('memory-limit').text) // 2**20
+            memory_limit = int(any_testset.find('memory-limit').text) // 2 ** 20
             self.update_info(input_file_name, output_file_name, time_limit, memory_limit, None)
         if problem_node.find('tags') is not None:  # need API function to add tags
             tags = []
@@ -636,7 +640,8 @@ class ProblemSession:
                         description_content = self.send_api_request('problem.viewGeneralDescription', {})
                         if description_content == '':
                             description_content = document_file.read()
-                            self.send_api_request('problem.saveGeneralDescription', {'description': description_content})
+                            self.send_api_request('problem.saveGeneralDescription',
+                                                  {'description': description_content})
                 if os.path.basename(document_path) == 'tutorial.txt':
                     with open(document_path, 'r') as document_file:
                         tutorial_content = self.send_api_request('problem.viewGeneralTutorial', {})
@@ -652,7 +657,7 @@ class ProblemSession:
         for solution_node in assets_node.find('solutions').findall('solution'):
             xml_tag_to_api_tag = {'accepted': 'OK', 'main': 'MA', 'time-limit-exceeded': 'TL',
                                   'memory-limit-exceeded': 'ML', 'wrong-answer': 'WA',
-                                  'incorrect': 'RJ', 'rejected' : 'RJ', 'time-limit-exceeded-or-accepted' : "TO"}
+                                  'incorrect': 'RJ', 'rejected': 'RJ', 'time-limit-exceeded-or-accepted': "TO"}
             upload_file_from_node(solution_node, 'solution', xml_tag_to_api_tag[solution_node.attrib['tag']])
         files_node = problem_node.find('files')
         if files_node is not None:
@@ -749,8 +754,8 @@ class ProblemSession:
                 try:
                     self.send_api_request('problem.saveTest', {'testset': testset_name,
                                                                'checkExisting': 'false',
-                                                               'testIndex' : str(test),
-                                                               'testUseInStatements' : 'true'})
+                                                               'testIndex': str(test),
+                                                               'testUseInStatements': 'true'})
                 except PolygonApiError as e:
                     print(e)
             if len(groups) > 0:
@@ -771,5 +776,13 @@ class ProblemSession:
         if not self.scores_enabled:
             self.scores_enabled = True
             if self.send_api_request('problem.enablePoints',
-                                 {'enable': 'true'}, is_json=False) is None:
+                                     {'enable': 'true'}, is_json=False) is None:
                 print("Couldn't enable scores for problem")
+
+    def set_test_group_deps(self, group, depends):
+        self.send_api_request('problem.saveTestGroup', {
+            'testset': 'tests',
+            'group': group,
+            'pointsPolicy': 'COMPLETE_GROUP',
+            'dependencies': ','.join(map(str, depends))
+        })

@@ -86,7 +86,7 @@ def get_local_solutions():
 
 
 def need_update_groups(content):
-    match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *-->", content)
+    match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *(depends *(\d* +)*)? *-->", content)
     return match is not None
 
 
@@ -98,7 +98,7 @@ def parse_script_groups(content, hand_tests):
     any = False
     script = []
     for i in filter(lambda x: x.strip(), content.splitlines()):
-        match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *-->", i)
+        match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *(depends *((\d* +)*))? *-->", i)
         if not match:
             match_freemarker_single_tag = re.search(rb"<#(\w*)(.*)/>", i)
             if match_freemarker_single_tag:
@@ -120,12 +120,12 @@ def parse_script_groups(content, hand_tests):
             t = i.split(b'>')[-1].strip()
             script.append(["test", t])
         else:
-            script.append(["group", match.group(1).decode("ascii"), match.group(3)])
+            script.append(["group", match.group(1).decode("ascii"), match.group(3), match.group(5)])
             any = True
         
     if not any:
         return None
-    
+
     pos = 0
     stack_cycles = []
     variables = dict()
@@ -143,7 +143,15 @@ def parse_script_groups(content, hand_tests):
         elif script[pos][0] == "group":
             cur_group = script[pos][1]
             groups[cur_group] = []
-            scores[cur_group] = int(script[pos][2].decode("ascii")) if script[pos][2] else None
+            if script[pos][2] is None:
+                scores[cur_group] = None
+            else:
+                scores[cur_group] = {}
+                scores[cur_group]["score"] = int(script[pos][2].decode("ascii"))
+                if script[pos][3] is None:
+                    scores[cur_group]["depends"] = None
+                else:
+                    scores[cur_group]["depends"] = list(map(int, filter(None, script[pos][3].split())))
         elif script[pos][0] == "single_tag":
             if script[pos][1][0] == rb"assign":
                 name, val = freemarker_parsers.parse_freemarker_assign_expr(script[pos][1][1], variables)
