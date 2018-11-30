@@ -404,7 +404,7 @@ class ProblemSession:
                 return local
         return None
 
-    def download_test(self, test_num, test_directory='.'):
+    def download_test(self, test_num, test_directory='.', input_pattern = '%03d', output_pattern = '%03d.a'):
         """
 
         :type test_num: str
@@ -413,11 +413,11 @@ class ProblemSession:
         input = self.send_api_request('problem.testInput',
                                       {'testset': 'tests', 'testIndex': test_num},
                                       is_json=False)
-        utils.safe_rewrite_file(test_directory + '/%03d' % int(test_num), utils.convert_newlines(input))
+        utils.safe_rewrite_file(test_directory + ('/' + input_pattern) % int(test_num), utils.convert_newlines(input))
         answer = self.send_api_request('problem.testAnswer',
                                        {'testset': 'tests', 'testIndex': test_num},
                                        is_json=False)
-        utils.safe_rewrite_file(test_directory + '/%03d.a' % int(test_num), utils.convert_newlines(answer))
+        utils.safe_rewrite_file(test_directory + ('/' + output_pattern) % int(test_num), utils.convert_newlines(answer))
 
     def download_all_tests(self):
         tests = self.send_api_request('problem.tests', {'testset': 'tests'})
