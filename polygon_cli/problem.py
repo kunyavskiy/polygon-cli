@@ -80,6 +80,15 @@ class ProblemSession:
         else:
             self.owner = data["owner"]
             self.problem_name = data["problemName"]
+            if data["version"] < 2:
+                for i in range(len(self.local_files)):
+                    if self.local_files[i].type == "statement":
+                        self.local_files[i].polygon_filename += ".tex"
+                        path = self.local_files[i].get_path()
+                        os.rename(path, path + ".tex")
+                        internal_path = self.local_files[i].get_internal_path()
+                        os.rename(internal_path, internal_path + ".tex")
+                        self.local_files[i].filename += ".tex"
 
     def dump_session(self):
         """
@@ -95,7 +104,7 @@ class ProblemSession:
         data["localFiles"] = self.local_files
         data["problemName"] = self.problem_name
         data["owner"] = self.owner
-        data["version"] = 1
+        data["version"] = 2
         return data
 
     def make_link(self, link, ccid=False, ssid=False):
@@ -290,7 +299,7 @@ class ProblemSession:
             for name, content in files_raw.items():
                 file = polygon_file.PolygonFile()
                 file.type = 'statement'
-                file.name = '%s/%s' % (lang, name)
+                file.name = '%s/%s.tex' % (lang, name)
                 file.content = polygon_file.PolygonFile.to_byte(content, encoding)
                 file.size = len(content)
                 files.append(file)
@@ -348,6 +357,8 @@ class ProblemSession:
 
     def upload_statement(self, name, content):
         lang, name = name.split('/')
+        if name.endswith(".tex"):
+            name = name[:-4]
         options = {
             'lang': lang,
             name: content,
