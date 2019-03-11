@@ -692,7 +692,7 @@ class ProblemSession:
             if 'name' in checker_node.attrib and checker_node.attrib['name'].startswith('std::'):
                 checker_name = checker_node.attrib['name']
             else:
-                checker_name = checker_node.find('copy').attrib['path']
+                checker_name = os.path.basename(checker_node.find('source').attrib['path'])
             self.set_utility_file(checker_name, 'checker')
         validators_node = assets_node.find('validators')
         if validators_node is not None:
