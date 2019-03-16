@@ -1,4 +1,5 @@
 import os
+import sys
 import getpass
 import yaml
 
@@ -65,7 +66,7 @@ def get_download_solution_path(solution):
 
 
 def get_merge_tool(old, our, theirs):
-    if os.platform == 'darwin':
+    if sys.platform == 'darwin':
         return ' '.join(["diff3", "--merge", our, old, theirs])
     else:
         return ' '.join(["diff3", "--strip-trailing-cr", "--merge", our, old, theirs])
