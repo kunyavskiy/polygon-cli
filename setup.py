@@ -10,7 +10,7 @@ setup(
         author='Pavel Kunyavskiy',
         author_email='kunyavskiy@gmail.com',
         description='Commandline tool for polygon',
-        install_requires=['colorama', 'requests', 'prettytable'],
+        install_requires=['colorama', 'requests', 'prettytable', 'pyyaml'],
         entry_points={
             'console_scripts': [
                 'polygon-cli=polygon_cli:main'
