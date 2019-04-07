@@ -1,13 +1,38 @@
 import os
+import sys
+import getpass
+import yaml
+
 
 polygon_url = "https://polygon.codeforces.com"
-# change this before installation
-# login and password will be used for non-api queries, you may leave them None
-# WARNING: this will be stored in plain-text on your computer in Python scripts directory
-login = None
-password = None
-api_key = None
-api_secret = None
+
+
+authentication_file = os.path.join(os.path.expanduser('~'), '.config', 'polygon-cli', 'auth.yaml')
+if os.path.exists(authentication_file):
+    with open(authentication_file, 'r') as fo:
+        auth_data = yaml.load(fo)
+    login = auth_data.get('login')
+    password = auth_data.get('password')
+    api_key = auth_data.get('api_key')
+    api_secret = auth_data.get('api_secret')
+
+if not os.path.exists(authentication_file) or not login or not api_key or not api_secret:
+    login = input('Login: ')
+    password = getpass.getpass('Password (leave blank if you want to enter it when needed): ')
+    api_key = input('API Key: ')
+    api_secret = input('API Secret: ')
+    os.makedirs(os.path.dirname(authentication_file), exist_ok=True)
+    with open(authentication_file, 'w') as fo:
+        auth_data = {
+            'login': login,
+            'password': password,
+            'api_key': api_key,
+            'api_secret': api_secret
+        }
+        yaml.dump(auth_data, fo, default_flow_style=False)
+    print('Authentication data is stored in {}'.format(authentication_file))
+
+
 internal_directory_path = '.polygon-cli'
 default_source_types = {
     '.cpp': 'cpp.g++17',
@@ -22,7 +47,7 @@ subdirectory_paths = {
     'solution': 'solutions',
     'source': 'src',
     'script': '',
-    'test' : 'tests',
+    'test': 'tests',
     'statement': 'statements',
 }
 sessionFile = 'session.json'
@@ -41,7 +66,10 @@ def get_download_solution_path(solution):
 
 
 def get_merge_tool(old, our, theirs):
-    return ' '.join(["diff3", "--strip-trailing-cr", "--merge", our, old, theirs])
+    if sys.platform == 'darwin':
+        return ' '.join(["diff3", "--merge", our, old, theirs])
+    else:
+        return ' '.join(["diff3", "--strip-trailing-cr", "--merge", our, old, theirs])
 
 
 def get_diff_tool(old, our, theirs):
