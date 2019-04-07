@@ -17,6 +17,7 @@ if os.path.exists(authentication_file):
     api_secret = auth_data.get('api_secret')
 
 if not os.path.exists(authentication_file) or not login or not api_key or not api_secret:
+    print('WARNING: Authentication data will be stored in plain text in {}'.format(authentication_file))
     login = input('Login: ')
     password = getpass.getpass('Password (leave blank if you want to enter it when needed): ')
     api_key = input('API Key: ')
