@@ -10,7 +10,7 @@ polygon_url = "https://polygon.codeforces.com"
 authentication_file = os.path.join(os.path.expanduser('~'), '.config', 'polygon-cli', 'auth.yaml')
 if os.path.exists(authentication_file):
     with open(authentication_file, 'r') as fo:
-        auth_data = yaml.load(fo)
+        auth_data = yaml.load(fo, Loader=yaml.BaseLoader)
     login = auth_data.get('login')
     password = auth_data.get('password')
     api_key = auth_data.get('api_key')
