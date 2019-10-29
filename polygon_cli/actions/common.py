@@ -23,7 +23,7 @@ def load_session(verbose=True):
         else:
             return False
         session_data = json.loads(session_data_json, object_hook=json_encoders.my_json_decoder)
-        global_vars.problem = ProblemSession(config.polygon_url, session_data["problemId"], verbose=verbose)
+        global_vars.problem = ProblemSession(config.polygon_url, session_data["problemId"], None, verbose=verbose)
         global_vars.problem.use_ready_session(session_data)
         return True
     except:

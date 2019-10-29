@@ -42,7 +42,7 @@ def parse_api_file_list(files, files_raw, type):
 
 
 class ProblemSession:
-    def __init__(self, address, problem_id, verbose=True):
+    def __init__(self, address, problem_id, pin, verbose=True):
         """
 
         :type address: str
@@ -58,6 +58,7 @@ class ProblemSession:
         self.local_files = []
         self.relogin_done = False
         self.verbose = verbose
+        self.pin = pin
         self.scores_enabled = False
         self.groups_enabled = set()
 
@@ -73,6 +74,10 @@ class ProblemSession:
         assert self.problem_id == data["problemId"]
         self.sessionId = data["sessionId"]
         self.local_files = data["localFiles"]
+        if "pin" in data:
+            self.pin = data["pin"]
+        else:
+            self.pin = None
         if "version" not in data:
             print('Your session file is too old, relogin required')
             self.sessionId = None
@@ -105,6 +110,8 @@ class ProblemSession:
         data["problemName"] = self.problem_name
         data["owner"] = self.owner
         data["version"] = 2
+        if self.pin is not None:
+            data["pin"] = self.pin
         return data
 
     def make_link(self, link, ccid=False, ssid=False):
@@ -164,6 +171,8 @@ class ProblemSession:
             sys.stdout.flush()
         params["apiKey"] = config.api_key
         params["time"] = int(time.time())
+        if self.pin is not None:
+            params["pin"] = self.pin
         if problem_data:
             params["problemId"] = self.problem_id
         signature_random = ''.join([chr(random.SystemRandom().randint(0, 25) + ord('a')) for _ in range(6)])
