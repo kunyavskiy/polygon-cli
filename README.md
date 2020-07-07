@@ -27,7 +27,7 @@ Command-line tool for [polygon](https://polygon.codeforces.com/)
 
 4. Run `python3 setup.py install [--user]`
   * On Linux, it will put the executable polygon-cli in /usr/local/bin
-  * On Windows, it will put the execuable polygon-cli in Scripts directory of your Python3 installtion. It should be added to the path variable for easier usage.
+  * On Windows, it will put the executable polygon-cli in Scripts directory of your Python3 installtion. It should be added to the path variable for easier usage.
 
    Add the option `--user` to install as local user without root/administrator privileges.
 
