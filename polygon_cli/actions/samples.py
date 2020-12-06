@@ -16,7 +16,14 @@ def process_samples(contest_id, pin, **session_options):
                 index = i["index"]
                 contest.download_test(index, 'examples', problem_name + '%d.in', problem_name + '%d.out')
                 if "inputForStatement" in i:
-                    utils.safe_rewrite_file('examples/%s%d.in' % (problem_name, index), i["inputForStatement"])
+                    while True:
+                       print("Problem %s have custom input for sample test %d. Should I download it? (y/n)" % (problem_name, index))
+                       ans = input()
+                       if ans == 'y' or ans == 'yes':
+                          utils.safe_rewrite_file('examples/%s%d.in' % (problem_name, index), i["inputForStatement"])
+                          break
+                       if ans == 'n' or ans == 'no':
+                          break
                 if "outputForStatement" in i:
                     utils.safe_rewrite_file('examples/%s%d.out' % (problem_name, index), i["outputForStatement"])
 
