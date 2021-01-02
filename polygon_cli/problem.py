@@ -42,13 +42,13 @@ def parse_api_file_list(files, files_raw, type):
 
 
 class ProblemSession:
-    def __init__(self, address, problem_id, pin, verbose=True):
+    def __init__(self, polygon_name, problem_id, pin, verbose=True):
         """
 
-        :type address: str
+        :type polygon_name: str
         :type problem_id: int or None
         """
-        self.polygon_address = address
+        self.polygon_name = polygon_name
         self.problem_id = problem_id
         self.owner = None
         self.problem_name = None
@@ -109,7 +109,8 @@ class ProblemSession:
         data["localFiles"] = self.local_files
         data["problemName"] = self.problem_name
         data["owner"] = self.owner
-        data["version"] = 2
+        data["polygon_name"] = self.polygon_name
+        data["version"] = 3
         if self.pin is not None:
             data["pin"] = self.pin
         return data
@@ -139,9 +140,9 @@ class ProblemSession:
                 self.renew_http_data()
             link += 'session=%s' % self.sessionId
         if link.startswith('/'):
-            result = self.polygon_address + link
+            result = config.polygon_url + link
         else:
-            result = self.polygon_address + '/' + link
+            result = config.polygon_url + '/' + link
         return result
 
     def send_request(self, method, url, **kw):
@@ -185,7 +186,7 @@ class ProblemSession:
         signature_string += b'?' + b'&'.join([i[0] + b'=' + i[1] for i in param_list])
         signature_string += b'#' + utils.convert_to_bytes(config.api_secret)
         params["apiSig"] = signature_random + utils.convert_to_bytes(hashlib.sha512(signature_string).hexdigest())
-        url = self.polygon_address + '/api/' + api_method
+        url = config.polygon_url + '/api/' + api_method
         result = self.session.request('POST', url, files=params)
         if self.verbose or result.status_code != 200:
             if not self.verbose:

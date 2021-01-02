@@ -78,15 +78,20 @@ def setup_login_by_url(polygon_name):
             api_secret = auth_data_by_name.get('api_secret')
 
     if not login or not api_key or not api_secret:
+        print('No login data found for polygon name ' + polygon_name)
         print('WARNING: Authentication data will be stored in plain text in {}'.format(authentication_file))
-        if polygon_name != 'main':
-            polygon_url = input('Url:')
-        else:
+        if polygon_name == 'main':
             polygon_url = MAIN_POLYGON_URL
-        login = input('Login: ')
-        password = getpass.getpass('Password (leave blank if you want to enter it when needed): ')
-        api_key = input('API Key: ')
-        api_secret = input('API Secret: ')
+            print('main polygon url is ' + polygon_url + '\n')
+        elif polygon_name == 'lksh':
+            polygon_url = 'https://polygon.lksh.ru'
+            print('lksh polygon url is ' + polygon_url + '\n')
+        else:
+            polygon_url = input('Url: ').strip()
+        login = input('Login: ').strip()
+        password = getpass.getpass('Password (leave blank if you want to enter it when needed): ').strip()
+        api_key = input('API Key: ').strip()
+        api_secret = input('API Secret: ').strip()
         os.makedirs(os.path.dirname(authentication_file), exist_ok=True)
         with open(authentication_file, 'w') as fo:
             auth_data['polygons'][polygon_name] = {
@@ -105,5 +110,3 @@ login = None
 password = None
 api_key = None
 api_secret = None
-
-setup_login_by_url('main')

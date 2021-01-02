@@ -3,8 +3,9 @@ from prettytable import PrettyTable
 from .common import *
 
 
-def process_samples(contest_id, pin, **session_options):
-    contest = ProblemSession(config.polygon_url, None, pin, **session_options)
+def process_samples(polygon_name, contest_id, pin, **session_options):
+    config.setup_login_by_url(polygon_name)
+    contest = ProblemSession(polygon_name, None, pin, **session_options)
     problems = contest.get_contest_problems(contest_id)
 
     for problem_name in problems:
@@ -37,7 +38,13 @@ def add_parser(subparsers):
 
     parser_samples.add_argument('contest_id', help='Contest id to download')
     parser_samples.add_argument('--pin', dest='pin', default=None, help='Pin code for contest')
+    parser_samples.add_argument('--polygon-name',
+                        action='store',
+                        dest='polygon_name',
+                        help='Name of polygon server to use for this problem'
+                        )
+
     def read_options(options):
-        process_samples(options.contest_id, options.pin, **get_session_options(options))
+        process_samples(options.polygon_name, options.contest_id, options.pin, **get_session_options(options))
 
     parser_samples.set_defaults(func=read_options)
