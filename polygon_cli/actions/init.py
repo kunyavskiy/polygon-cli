@@ -68,7 +68,8 @@ def add_parser(subparsers):
     parser_init.add_argument('--polygon-name',
                         action='store',
                         dest='polygon_name',
-                        help='Name of polygon server to use for this problem'
+                        help='Name of polygon server to use for this problem',
+                        default='main'
                         )
 
     parser_init_contest = subparsers.add_parser(
@@ -80,6 +81,7 @@ def add_parser(subparsers):
     parser_init_contest.add_argument('--polygon-name',
                         action='store',
                         dest='polygon_name',
-                        help='Name of polygon server to use for this problem'
+                        help='Name of polygon server to use for this problem',
+                        default='main'
                         )
     parser_init_contest.set_defaults(func=lambda options: process_init_contest(options.polygon_name, options.contest_id, options.pin, **get_session_options(options)))

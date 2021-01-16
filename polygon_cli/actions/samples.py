@@ -41,7 +41,8 @@ def add_parser(subparsers):
     parser_samples.add_argument('--polygon-name',
                         action='store',
                         dest='polygon_name',
-                        help='Name of polygon server to use for this problem'
+                        help='Name of polygon server to use for this problem',
+                        default='main'
                         )
 
     def read_options(options):
