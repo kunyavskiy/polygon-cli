@@ -51,6 +51,7 @@ def get_diff_tool(old, our, theirs):
 def setup_login_by_url(polygon_name):
     global polygon_url, login, password, api_key, api_secret
     authentication_file = os.path.join(os.path.expanduser('~'), '.config', 'polygon-cli', 'auth.yaml')
+    auth_data = {}
     if os.path.exists(authentication_file):
         with open(authentication_file, 'r') as fo:
             auth_data = yaml.load(fo, Loader=yaml.BaseLoader)
@@ -94,6 +95,8 @@ def setup_login_by_url(polygon_name):
         api_secret = input('API Secret: ').strip()
         os.makedirs(os.path.dirname(authentication_file), exist_ok=True)
         with open(authentication_file, 'w') as fo:
+            if 'polygons' not in auth_data:
+                auth_data['polygons'] = {}
             auth_data['polygons'][polygon_name] = {
                 'url': polygon_url,
                 'login': login,

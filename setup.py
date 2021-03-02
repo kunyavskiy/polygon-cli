@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
         name='polygon-cli',
-        version='1.1.8',
+        version='1.1.9',
         packages=['polygon_cli', 'polygon_cli.actions'],
         url='https://github.com/kunyavskiy/polygon-cli',
         license='MIT',
