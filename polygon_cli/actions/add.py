@@ -51,7 +51,7 @@ def add_parser(subparsers):
                                                   'validator', 'interactor', 'statement'],
                             help='Type of file to add')
     parser_add.add_argument('-t', dest='solution_type',
-                            choices=['MAIN', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE', 'TO'],
+                            choices=['MAIN', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE', 'TO', 'NR', 'TM'],
                             help='Solution type')
     parser_add.add_argument('file', nargs='+', help='List of files to add')
 
