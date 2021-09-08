@@ -676,9 +676,18 @@ class ProblemSession:
                                           statement_node.attrib['charset'], statement_node.attrib['language'])
         assets_node = problem_node.find('assets')
         for solution_node in assets_node.find('solutions').findall('solution'):
-            xml_tag_to_api_tag = {'accepted': 'OK', 'main': 'MA', 'time-limit-exceeded': 'TL',
-                                  'memory-limit-exceeded': 'ML', 'wrong-answer': 'WA',
-                                  'incorrect': 'RJ', 'rejected': 'RJ', 'time-limit-exceeded-or-accepted': "TO"}
+            xml_tag_to_api_tag = {'accepted': 'OK',
+                                  'main': 'MA',
+                                  'time-limit-exceeded': 'TL',
+                                  'memory-limit-exceeded': 'ML',
+                                  'wrong-answer': 'WA',
+                                  'incorrect': 'RJ',
+                                  'rejected': 'RJ',
+                                  'time-limit-exceeded-or-accepted': "TO",
+                                  'time-limit-exceeded-or-memory-limit-exceeded': "TM",
+                                  'presentation-error': "PE",
+                                  'do-not-run': "NR",
+                                  'failed': "RE"}
             upload_file_from_node(solution_node, 'solution', xml_tag_to_api_tag[solution_node.attrib['tag']])
         files_node = problem_node.find('files')
         if files_node is not None:
