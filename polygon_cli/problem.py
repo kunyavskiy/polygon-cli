@@ -647,7 +647,7 @@ class ProblemSession:
             time_limit = int(any_testset.find('time-limit').text)
             memory_limit = int(any_testset.find('memory-limit').text) // 2 ** 20
             self.update_info(input_file_name, output_file_name, time_limit, memory_limit, None)
-        if problem_node.find('tags') is not None:  # need API function to add tags
+        if problem_node.find('tags') is not None:
             tags = []
             for tag_node in problem_node.find('tags').findall('tag'):
                 tags.append(tag_node.attrib['value'])
