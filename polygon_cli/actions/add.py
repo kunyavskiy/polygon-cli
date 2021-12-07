@@ -48,7 +48,7 @@ def add_parser(subparsers):
             help="Upload files to polygon"
     )
     parser_add.add_argument('file_type', choices=['solution', 'resource', 'source', 'attachment', 'checker',
-                                                  'validator', 'interactor', 'statement'],
+                                                  'validator', 'interactor', 'statement', 'statementResource'],
                             help='Type of file to add')
     parser_add.add_argument('-t', dest='solution_type',
                             choices=['MAIN', 'OK', 'RJ', 'TL', 'WA', 'PE', 'ML', 'RE', 'TO', 'NR', 'TM'],
