@@ -315,12 +315,22 @@ class ProblemSession:
                 files.append(file)
         return files
 
+    def get_statement_resources_list(self):
+        """
+
+        :rtype: list of polygon_file.PolygonFile
+        """
+        files_raw = self.send_api_request('problem.statementResources', {})
+        files = []
+        parse_api_file_list(files, files_raw, 'statementResource')
+        return files
+
     def get_all_files_list(self):
         """
 
         :rtype: list of polygon_file.PolygonFile
         """
-        return self.get_files_list() + self.get_solutions_list() + self.get_statements_list()
+        return self.get_files_list() + self.get_solutions_list() + self.get_statements_list() + self.get_statement_resources_list()
 
     def upload_file(self, name, type, content, is_new, tag=None, source_type=None):
         """
@@ -350,6 +360,8 @@ class ProblemSession:
             api_method = 'problem.saveSolution'
             if tag:
                 options['tag'] = tag
+        elif type == 'statementResource':
+            api_method = 'problem.saveStatementResource'
         else:
             api_method = 'problem.saveFile'
             options['type'] = utils.get_api_file_type(type)
@@ -425,7 +437,7 @@ class ProblemSession:
                 return local
         return None
 
-    def download_test(self, test_num, test_directory='.', input_pattern = '%03d', output_pattern = '%03d.a'):
+    def download_test(self, test_num, test_directory='.', input_pattern='%03d', output_pattern='%03d.a'):
         """
 
         :type test_num: str

@@ -44,6 +44,8 @@ class PolygonFile:
                 encoding = data.get('encoding', None)
                 content = data.get(name, None)
                 file_text = PolygonFile.to_byte(content, encoding)
+        elif self.type == 'statementResource':
+            file_text = global_vars.problem.send_api_request('problem.viewStatementResource', {'name': self.name}, False)
         else:
             file_text = global_vars.problem.send_api_request('problem.viewFile',
                                                              {'name': self.name,
