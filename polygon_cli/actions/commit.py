@@ -8,6 +8,13 @@ def process_commit(to_commit):
     files = global_vars.problem.local_files
     polygon_files = global_vars.problem.get_all_files_list()
     table = PrettyTable(['File type', 'Polygon name', 'Local path', 'Status'])
+    def get_priority_by_type(type):
+        # resource before `source`, and `source` before `script`
+        return {
+            'resource': 20,
+            'source': 10,
+        }.get(type, 0)
+    files.sort(key=lambda prob: -get_priority_by_type(prob.type))
     for file in files:
         polygon_file = None
         if file.polygon_filename:
