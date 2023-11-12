@@ -604,13 +604,10 @@ class ProblemSession:
                 return content
 
     def save_statement_resource_files(self, directory):
-        example_pat = re.compile(r'example.\d*\.?a?')
         skip_list = ['problem-properties.json', 'problem.tex', 'tutorial.tex']
         for file in os.listdir(directory):
             file_name = os.path.basename(file)
             if os.path.isdir(file_name):
-                continue
-            if example_pat.fullmatch(file_name):
                 continue
             if file_name in skip_list:
                 continue
@@ -797,6 +794,11 @@ class ProblemSession:
             else:
                 checker_name = os.path.basename(checker_node.find('source').attrib['path'])
             self.set_utility_file(checker_name, 'checker')
+
+        for interactor_node in assets_node.findall('interactor'):
+            interactor_name = os.path.basename(interactor_node.find('source').attrib['path'])
+            self.update_info(None, None, None, None, interactive='true')
+            self.set_utility_file(interactor_name, 'interactor')
 
         validators_node = assets_node.find('validators')
         if validators_node is not None:
