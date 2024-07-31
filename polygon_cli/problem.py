@@ -695,7 +695,11 @@ class ProblemSession:
             content = f.read()
             f.close()
             print('Adding ' + type + ': ' + filepath)
-            return self.upload_file(os.path.basename(filepath), type, content, True, tag, source_type)
+            result = self.upload_file(os.path.basename(filepath), type, content, True, tag, source_type)
+            if result:
+                return result
+            result = self.upload_file(os.path.basename(filepath), type, content, True, tag, None)
+            return result
 
         if os.path.isfile(path_to_problemxml):
             problem_node = ElementTree.parse(path_to_problemxml)
