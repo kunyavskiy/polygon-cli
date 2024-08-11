@@ -641,12 +641,12 @@ class ProblemSession:
         if set_limits:
             tl = None
             ml = None
-            match = re.search("{\s*([\d.]+)\s+sec[^}]*}", content)
+            match = re.search("{\\s*([\d.]+)\\s+sec[^}]*}", content)
             if match is not None:
                 tl = match.group(1)
                 print('Found TL = {} seconds'.format(tl))
                 tl = int(float(tl) * 1000)  # seconds to ms
-            match = re.search("{\s*(\d+)\s+[MmмМ][^}]*}", content)
+            match = re.search("{\\s*(\d+)\\s+[MmмМ][^}]*}", content)
             if match is not None:
                 ml = match.group(1)
                 print('Found ML = {} mebibytes'.format(ml))
