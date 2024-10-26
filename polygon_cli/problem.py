@@ -532,7 +532,7 @@ class ProblemSession:
             return False
         return True
 
-    def set_test_group(self, tests, group, test_points=None):
+    def set_test_group(self, tests, group, test_points=[]):
         for i in tests:
             #self.send_api_request('problem.saveTest', {'testset': 'tests', 'testIndex': i, 'testGroup': group, 'testPoints': test_points[i]})
             self.set_test_score(i, group, test_points[i] if i in test_points else None)
@@ -641,12 +641,12 @@ class ProblemSession:
         if set_limits:
             tl = None
             ml = None
-            match = re.search("{\\s*([\d.]+)\\s+sec[^}]*}", content)
+            match = re.search("{\\s*([\\d.]+)\\s+sec[^}]*}", content)
             if match is not None:
                 tl = match.group(1)
                 print('Found TL = {} seconds'.format(tl))
                 tl = int(float(tl) * 1000)  # seconds to ms
-            match = re.search("{\\s*(\d+)\\s+[MmмМ][^}]*}", content)
+            match = re.search("{\\s*(\\d+)\\s+[MmмМ][^}]*}", content)
             if match is not None:
                 ml = match.group(1)
                 print('Found ML = {} mebibytes'.format(ml))

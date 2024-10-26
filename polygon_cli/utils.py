@@ -86,7 +86,7 @@ def get_local_solutions():
 
 
 def need_update_groups(content):
-    match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *(depends *(\d* +)*)? *-->", content)
+    match = re.search(rb"<#-- *group *([-0-9]*) *(score *(\d*))? *(depends *([-0-9]* +)*)? *-->", content)
     return match is not None
 
 
@@ -98,7 +98,7 @@ def parse_script_groups(content, hand_tests):
     any = False
     script = []
     for i in filter(lambda x: x.strip(), content.splitlines()):
-        match = re.search(rb"<#-- *group *(\d*) *(score *(\d*))? *(depends *((\d* +)*))? *-->", i)
+        match = re.search(rb"<#-- *group *([-0-9]*) *(score *(\d*))? *(depends *(([-0-9]* +)*))? *-->", i)
         if not match:
             match_freemarker_single_tag = re.search(rb"<#(\w*)(.*)/>", i)
             if match_freemarker_single_tag:
@@ -151,7 +151,7 @@ def parse_script_groups(content, hand_tests):
                 if script[pos][3] is None:
                     scores[cur_group]["depends"] = None
                 else:
-                    scores[cur_group]["depends"] = list(map(int, filter(None, script[pos][3].split())))
+                    scores[cur_group]["depends"] = list(map(lambda a: a.decode("ascii"), filter(None, script[pos][3].split())))
         elif script[pos][0] == "single_tag":
             if script[pos][1][0] == rb"assign":
                 name, val = freemarker_parsers.parse_freemarker_assign_expr(script[pos][1][1], variables)
