@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
         name='polygon-cli',
-        version='1.1.13',
+        version='1.1.14',
         packages=['polygon_cli', 'polygon_cli.actions'],
         long_description=long_description,
         long_description_content_type="text/markdown",
